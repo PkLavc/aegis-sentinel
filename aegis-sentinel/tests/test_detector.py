@@ -283,9 +283,10 @@ class TestStatisticalDetector:
         await detector._calculate_statistics(sample_metrics)
         
         assert detector._trained is True
-        assert "cpu_percent" in detector._statistics
-        assert "memory_percent" in detector._statistics
-        assert "disk_usage_percent" in detector._statistics
+        assert detector._statistics is not None
+        assert detector._statistics.get("cpu_percent") is not None
+        assert detector._statistics.get("memory_percent") is not None
+        assert detector._statistics.get("disk_usage_percent") is not None
         
         cpu_stats = detector._statistics["cpu_percent"]
         assert "mean" in cpu_stats

@@ -11,8 +11,7 @@ import time
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
+# Importações locais
 from src.monitor import APIMetrics, MonitoringConfig, SystemMetrics, SystemMonitor
 
 
@@ -44,7 +43,8 @@ class TestSystemMetrics:
     
     def test_system_metrics_validation(self):
         """Test that SystemMetrics validates input data correctly."""
-        with pytest.raises(ValueError, match="Memory values must be positive"):
+        # Test negative memory value
+        try:
             SystemMetrics(
                 timestamp=datetime.now(),
                 cpu_percent=50.0,
@@ -55,8 +55,12 @@ class TestSystemMetrics:
                 network_bytes_sent=1000,
                 network_bytes_recv=2000
             )
+            assert False, "Should have raised ValueError for negative memory"
+        except ValueError as e:
+            assert "Memory values must be positive" in str(e)
         
-        with pytest.raises(ValueError, match="Memory values appear unreasonably high"):
+        # Test unreasonably high memory value
+        try:
             SystemMetrics(
                 timestamp=datetime.now(),
                 cpu_percent=50.0,
@@ -67,6 +71,9 @@ class TestSystemMetrics:
                 network_bytes_sent=1000,
                 network_bytes_recv=2000
             )
+            assert False, "Should have raised ValueError for high memory"
+        except ValueError as e:
+            assert "Memory values appear unreasonably high" in str(e)
 
 
 class TestAPIMetrics:
@@ -108,8 +115,7 @@ class TestAPIMetrics:
 class TestSystemMonitor:
     """Test cases for SystemMonitor class."""
     
-    @pytest.fixture
-    def monitor_config(self):
+    def create_monitor_config(self):
         """Create a test monitoring configuration."""
         return MonitoringConfig(
             collection_interval=1.0,
@@ -118,15 +124,15 @@ class TestSystemMonitor:
             enable_disk_monitoring=True
         )
     
-    @pytest.fixture
-    def monitor(self, monitor_config):
+    def create_monitor(self):
         """Create a SystemMonitor instance for testing."""
-        return SystemMonitor(monitor_config)
+        return SystemMonitor(self.create_monitor_config())
     
     @patch('src.monitor.psutil')
     @patch('src.monitor.aiohttp')
-    async def test_collect_system_metrics(self, mock_aiohttp, mock_psutil, monitor):
+    async def test_collect_system_metrics(self, mock_aiohttp, mock_psutil):
         """Test that system metrics are collected correctly."""
+        monitor = self.create_monitor()
         # Mock psutil calls
         mock_psutil.cpu_percent.return_value = 50.0
         
@@ -160,8 +166,9 @@ class TestSystemMonitor:
         assert metrics.network_bytes_recv == 2000
     
     @patch('src.monitor.aiohttp')
-    async def test_collect_api_metrics_success(self, mock_aiohttp, monitor):
+    async def test_collect_api_metrics_success(self, mock_aiohttp):
         """Test that API metrics are collected correctly for successful requests."""
+        monitor = self.create_monitor()
         # Mock aiohttp response
         mock_response = AsyncMock()
         mock_response.status = 200
@@ -184,8 +191,9 @@ class TestSystemMonitor:
         assert metrics[0].success is True
     
     @patch('src.monitor.aiohttp')
-    async def test_collect_api_metrics_timeout(self, mock_aiohttp, monitor):
+    async def test_collect_api_metrics_timeout(self, mock_aiohttp):
         """Test that API metrics handle timeout correctly."""
+        monitor = self.create_monitor()
         # Mock asyncio.TimeoutError
         mock_session = AsyncMock()
         mock_session.get.side_effect = asyncio.TimeoutError()
@@ -200,8 +208,9 @@ class TestSystemMonitor:
         assert metrics[0].success is False
         assert metrics[0].error_message == "Request timeout"
     
-    async def test_monitoring_loop(self, monitor):
+    async def test_monitoring_loop(self):
         """Test that the monitoring loop runs correctly."""
+        monitor = self.create_monitor()
         # Mock the collection methods
         mock_system_metrics = SystemMetrics(
             timestamp=datetime.now(),
@@ -235,8 +244,9 @@ class TestSystemMonitor:
         assert len(latest_metrics) > 0
         assert isinstance(latest_metrics[0], SystemMetrics)
     
-    def test_get_latest_metrics(self, monitor):
+    def test_get_latest_metrics(self):
         """Test that latest metrics are retrieved correctly."""
+        monitor = self.create_monitor()
         # Add some test metrics
         test_metrics = [
             SystemMetrics(
@@ -256,8 +266,9 @@ class TestSystemMonitor:
         assert len(latest) == 1
         assert latest[0] == test_metrics[0]
     
-    def test_get_latest_api_metrics(self, monitor):
+    def test_get_latest_api_metrics(self):
         """Test that latest API metrics are retrieved correctly."""
+        monitor = self.create_monitor()
         # Add some test API metrics
         test_metrics = [
             APIMetrics(
@@ -274,8 +285,9 @@ class TestSystemMonitor:
         assert len(latest) == 1
         assert latest[0] == test_metrics[0]
     
-    def test_get_metrics_summary(self, monitor):
+    def test_get_metrics_summary(self):
         """Test that metrics summary is generated correctly."""
+        monitor = self.create_monitor()
         # Add test metrics
         test_metrics = [
             SystemMetrics(
