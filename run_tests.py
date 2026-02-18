@@ -6,6 +6,7 @@ without requiring external test frameworks to be installed.
 """
 
 import asyncio
+import inspect
 import sys
 import traceback
 from datetime import datetime
@@ -35,17 +36,17 @@ class SimpleTestRunner:
         self.tests_run += 1
         try:
             method = getattr(test_instance, method_name)
-            if asyncio.iscoroutinefunction(method):
+            if inspect.iscoroutinefunction(method):
                 asyncio.run(method())
             else:
                 method()
             self.tests_passed += 1
-            print(f"✓ {test_instance.__class__.__name__}.{method_name}")
+            print(f"PASS {test_instance.__class__.__name__}.{method_name}")
             return True
         except Exception as e:
             self.tests_failed += 1
             self.failures.append((test_instance.__class__.__name__, method_name, str(e)))
-            print(f"✗ {test_instance.__class__.__name__}.{method_name}: {e}")
+            print(f"FAIL {test_instance.__class__.__name__}.{method_name}: {e}")
             return False
     
     def run_test_class(self, test_class) -> Tuple[int, int]:
@@ -99,10 +100,10 @@ class SimpleTestRunner:
                 print(f"  {class_name}.{method_name}: {error}")
         
         if total_failed == 0:
-            print("\nAll tests passed! ✓")
+            print("\nAll tests passed!")
             sys.exit(0)
         else:
-            print(f"\n{total_failed} test(s) failed! ✗")
+            print(f"\n{total_failed} test(s) failed!")
             sys.exit(1)
 
 

@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
+import aiohttp
 import psutil
 from pydantic import BaseModel, Field, validator
 
@@ -47,7 +48,7 @@ class APIMetrics(BaseModel):
     timestamp: datetime = Field(description="Timestamp of metric collection")
     endpoint: str = Field(min_length=1, description="API endpoint being monitored")
     response_time_ms: float = Field(ge=0.0, description="Response time in milliseconds")
-    status_code: int = Field(ge=100, le=599, description="HTTP status code")
+    status_code: int = Field(ge=0, le=599, description="HTTP status code (0 for timeout/errors)")
     success: bool = Field(description="Whether the request was successful")
     error_message: Optional[str] = Field(default=None, description="Error message if request failed")
 
@@ -201,7 +202,6 @@ class SystemMonitor:
     
     async def _collect_api_metrics(self) -> List[APIMetrics]:
         """Collect API performance metrics for configured endpoints."""
-        import aiohttp
         
         metrics = []
         

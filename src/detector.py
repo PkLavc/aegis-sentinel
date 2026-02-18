@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from pydantic import BaseModel, Field, validator
+from sklearn.ensemble import IsolationForest
 
 from .monitor import APIMetrics, SystemMetrics
 
@@ -36,11 +37,11 @@ class AnomalyResult(BaseModel):
 class DetectionConfig:
     """Configuration for anomaly detection."""
     
-    isolation_contamination: float = Field(default=0.1, ge=0.01, le=0.5, description="Contamination parameter for Isolation Forest")
-    isolation_n_estimators: int = Field(default=100, ge=10, le=1000, description="Number of trees in Isolation Forest")
-    statistical_threshold_multiplier: float = Field(default=3.0, gt=1.0, le=5.0, description="Standard deviation multiplier for statistical detection")
-    min_samples_for_detection: int = Field(default=50, ge=10, le=500, description="Minimum samples required for detection")
-    sliding_window_size: int = Field(default=100, ge=20, le=1000, description="Size of sliding window for analysis")
+    isolation_contamination: float = 0.1
+    isolation_n_estimators: int = 100
+    statistical_threshold_multiplier: float = 3.0
+    min_samples_for_detection: int = 50
+    sliding_window_size: int = 100
 
 
 class AnomalyDetector(ABC):
@@ -98,8 +99,12 @@ class IsolationForestDetector(AnomalyDetector):
             ]])
             
             # Predict anomaly
-            anomaly_score = self._model.decision_function(features)[0]
-            is_anomaly = self._model.predict(features)[0] == -1
+            if self._model is not None:
+                anomaly_score = self._model.decision_function(features)[0]
+                is_anomaly = self._model.predict(features)[0] == -1
+            else:
+                anomaly_score = 0.0
+                is_anomaly = False
             
             # Calculate confidence score (normalize anomaly score)
             confidence_score = abs(anomaly_score) / (abs(anomaly_score) + 1.0)
@@ -166,8 +171,6 @@ class IsolationForestDetector(AnomalyDetector):
             training_array = np.array(training_data)
             
             # Initialize and train model
-            from sklearn.ensemble import IsolationForest
-            
             self._model = IsolationForest(
                 contamination=self.config.isolation_contamination,
                 n_estimators=self.config.isolation_n_estimators,
@@ -326,10 +329,10 @@ class StatisticalDetector(AnomalyDetector):
                 values = [getattr(metric, metric_name) for metric in metrics[-self.config.min_samples_for_detection:]]
                 
                 self._statistics[metric_name] = {
-                    'mean': float(np.mean(values)),
-                    'std': float(np.std(values)),
-                    'min': float(np.min(values)),
-                    'max': float(np.max(values))
+                    'mean': float(np.mean(values).item()),
+                    'std': float(np.std(values).item()),
+                    'min': float(np.min(values).item()),
+                    'max': float(np.max(values).item())
                 }
             
             self._trained = True
