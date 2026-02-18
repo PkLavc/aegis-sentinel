@@ -2,7 +2,7 @@
 
 [![Python Version](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/username/aegis-sentinel/actions)
+[![GitHub Stars](https://img.shields.io/github/stars/PkLavc/aegis-sentinel?style=social)](https://github.com/PkLavc/aegis-sentinel)
 
 ## Executive Summary
 
@@ -28,6 +28,16 @@ Aegis Sentinel employs a modular, service-oriented architecture with three core 
 - **Docker container management** for automated recovery
 - **Comprehensive testing** with pytest framework
 
+### Visual Workflow
+```mermaid
+graph LR
+    A[Metrics Collection] --> B[ML Detection]
+    B --> C{Anomaly?}
+    C -- No --> A
+    C -- Yes --> D[Recovery Engine]
+    D --> E[Self-Healing Action]
+```
+
 ### System Requirements
 
 - Python 3.11 or higher
@@ -44,12 +54,19 @@ In today's digital economy, infrastructure reliability is critical for maintaini
 - **Enhancing cybersecurity resilience** through proactive anomaly detection
 - **Demonstrating technological leadership** in infrastructure automation
 
+### Engineering Impact Metrics
+| Metric | Target | National Interest Benefit |
+| :--- | :--- | :--- |
+| **Detection Latency** | < 2.0s | Real-time response to critical failures |
+| **False Positive Rate** | < 5% | Minimizes operational disruption |
+| **Recovery Success** | > 95% | Ensures high availability for essential services |
+
 The system's ability to detect and remediate issues before they escalate to service outages directly contributes to the stability and reliability of digital services that are essential to modern society.
 
 ## Installation
 
 ```bash
-git clone https://github.com/username/aegis-sentinel.git
+git clone https://github.com/PkLavc/aegis-sentinel.git
 cd aegis-sentinel
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -184,6 +201,18 @@ pytest tests/test_detector.py
 
 Aegis Sentinel uses structured JSON logging for enterprise auditability:
 
+```json
+{
+  "timestamp": "2026-02-18T10:15:30Z",
+  "level": "WARNING",
+  "event": "anomaly_detected",
+  "metric": "memory_usage",
+  "value": 92.5,
+  "action": "docker_container_restart",
+  "target": "api_gateway_v1"
+}
+```
+
 ```python
 import logging
 
@@ -215,6 +244,11 @@ This project follows strict professional standards. All contributions must inclu
 
 MIT License - see LICENSE file for details.
 
-## Contact
+## Author
 
-For professional inquiries and collaboration opportunities, please contact the development team.
+**Patrick - Computer Engineer** To view other projects and portfolio details, visit:
+[https://pklavc.github.io/projects.html](https://pklavc.github.io/projects.html)
+
+---
+
+*This project is part of a professional portfolio demonstrating advanced systems engineering capabilities for high-availability infrastructure.*
