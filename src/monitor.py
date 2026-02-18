@@ -10,7 +10,7 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Union
 
 import aiohttp
@@ -121,12 +121,8 @@ class SystemMonitor:
                     api_metrics = await self._collect_api_metrics()
                     self._api_metrics_buffer.extend(api_metrics)
                 
-                # Keep buffer size manageable
-                if len(self._metrics_buffer) > 1000:
-                    self._metrics_buffer = self._metrics_buffer[-500:]
-                
-                if len(self._api_metrics_buffer) > 1000:
-                    self._api_metrics_buffer = self._api_metrics_buffer[-500:]
+                # Keep buffer size manageable with TTL (30 minutes)
+                self._cleanup_old_metrics()
                 
                 await asyncio.sleep(self.config.collection_interval)
                 
@@ -267,6 +263,29 @@ class SystemMonitor:
                 })
         
         return metrics
+    
+    def _cleanup_old_metrics(self) -> None:
+        """Clean up old metrics from buffers based on TTL (30 minutes) and size limits."""
+        cutoff_time = datetime.now() - timedelta(minutes=30)
+        
+        # Clean up system metrics buffer
+        self._metrics_buffer = [
+            metric for metric in self._metrics_buffer 
+            if metric.timestamp >= cutoff_time
+        ]
+        
+        # Clean up API metrics buffer
+        self._api_metrics_buffer = [
+            metric for metric in self._api_metrics_buffer 
+            if metric.timestamp >= cutoff_time
+        ]
+        
+        # Apply size limits as fallback
+        if len(self._metrics_buffer) > 1000:
+            self._metrics_buffer = self._metrics_buffer[-500:]
+        
+        if len(self._api_metrics_buffer) > 1000:
+            self._api_metrics_buffer = self._api_metrics_buffer[-500:]
     
     def get_latest_metrics(self, limit: int = 100) -> List[SystemMetrics]:
         """Get the latest system metrics from the buffer."""

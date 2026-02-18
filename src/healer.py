@@ -16,6 +16,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Union
 
 import docker
+import docker.errors
 from pydantic import BaseModel, Field, validator
 
 from .detector import AnomalyResult
@@ -103,6 +104,8 @@ class DockerRecoveryHandler(RecoveryActionHandler):
                 "error_type": type(e).__name__,
                 "error_message": str(e)
             })
+            # Don't raise exception - allow system to continue without Docker recovery
+            self._docker_client = None
     
     def can_handle(self, action_type: str) -> bool:
         """Check if this handler can execute the given action type."""
@@ -211,6 +214,19 @@ class DockerRecoveryHandler(RecoveryActionHandler):
                 })
                 
                 await asyncio.sleep(action.retry_delay)
+        
+        # This should never be reached, but return a failure result as fallback
+        return RecoveryResult(
+            action_id=action.action_id,
+            timestamp=datetime.now(),
+            success=False,
+            action_type=action.action_type,
+            target=action.target,
+            execution_time=time.time() - start_time,
+            error_message="Unexpected end of execution",
+            retry_count=retry_count,
+            final_state="failed"
+        )
     
     async def _wait_for_container_health(self, container, timeout: float) -> None:
         """Wait for container to reach healthy state."""
@@ -540,7 +556,11 @@ class RecoveryEngine:
         
         async def execute_with_semaphore(action: RecoveryAction) -> RecoveryResult:
             async with semaphore:
-                return await self._execute_action(action)
+                try:
+                    return await self._execute_action(action)
+                except Exception as e:
+                    # Ensure semaphore is released even if action fails
+                    raise e
         
         tasks = [execute_with_semaphore(action) for action in actions]
         results = await asyncio.gather(*tasks, return_exceptions=True)
