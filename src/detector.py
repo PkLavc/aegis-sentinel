@@ -41,6 +41,8 @@ class DetectionConfig:
     isolation_n_estimators: int = 100
     statistical_threshold_multiplier: float = 3.0
     min_samples_for_detection: int = 50
+    ml_warmup_samples: int = 50  # Minimum samples before attempting ML training
+    ml_failure_threshold: int = 3  # Number of ML failures before logging CRITICAL
     sliding_window_size: int = 100
 
 
@@ -78,16 +80,47 @@ class IsolationForestDetector(AnomalyDetector):
         if not self._trained:
             await self._train_model(metrics)
         
-        # FAIL-FAST ML VALIDATION: Check if model is properly trained and available
-        if not self._trained or self._model is None or len(metrics) < self.config.min_samples_for_detection:
-            # CRITICAL: Emit alert and delegate to statistical fallback
-            logger.critical("ML model unavailable - SYSTEM BLINDNESS RISK DETECTED", extra={
+        # ML WARM-UP: Check if we're still in warm-up phase
+        if len(metrics) < self.config.ml_warmup_samples:
+            # During warm-up, use INFO level instead of CRITICAL
+            logger.info("ML model in warm-up phase - using statistical fallback", extra={
                 "model_trained": self._trained,
                 "model_exists": self._model is not None,
-                "sufficient_data": len(metrics) >= self.config.min_samples_for_detection,
-                "required_samples": self.config.min_samples_for_detection,
-                "available_samples": len(metrics)
+                "warmup_samples_collected": len(metrics),
+                "warmup_samples_required": self.config.ml_warmup_samples
             })
+            
+            # DELEGATE TO STATISTICAL FALLBACK: Ensure monitoring continues
+            return AnomalyResult(
+                timestamp=datetime.now(),
+                metric_type="system_isolation_forest_fallback",
+                anomaly_detected=False,
+                confidence_score=0.0,
+                metric_values={},
+                anomaly_description="ML model in warm-up phase - delegated to statistical detection",
+                severity_level="unknown"
+            )
+        
+        # FAIL-FAST ML VALIDATION: Check if model is properly trained and available
+        if not self._trained or self._model is None or len(metrics) < self.config.min_samples_for_detection:
+            # ML WARM-UP: Only log CRITICAL after warm-up phase is complete
+            if len(metrics) >= self.config.ml_warmup_samples:
+                # CRITICAL: Emit alert and delegate to statistical fallback
+                logger.critical("ML model unavailable - SYSTEM BLINDNESS RISK DETECTED", extra={
+                    "model_trained": self._trained,
+                    "model_exists": self._model is not None,
+                    "sufficient_data": len(metrics) >= self.config.min_samples_for_detection,
+                    "required_samples": self.config.min_samples_for_detection,
+                    "available_samples": len(metrics)
+                })
+            else:
+                # During warm-up, use INFO level instead of CRITICAL
+                logger.info("ML model in warm-up phase - using statistical fallback", extra={
+                    "model_trained": self._trained,
+                    "model_exists": self._model is not None,
+                    "warmup_samples_collected": len(metrics),
+                    "warmup_samples_required": self.config.ml_warmup_samples
+                })
             
             # DELEGATE TO STATISTICAL FALLBACK: Ensure monitoring continues
             return AnomalyResult(
@@ -433,7 +466,7 @@ class AnomalyDetectorService:
         # DETECTION CIRCUIT BREAKER: Prevent system from going blind if ML models fail
         # Simple circuit breaker implementation to avoid circular import
         self._ml_failures = 0
-        self._ml_failure_threshold = 3
+        self._ml_failure_threshold = self.config.ml_failure_threshold
         self._ml_recovery_timeout = 300.0
         self._last_failure_time = None
         self._statistical_only_mode = False
@@ -443,11 +476,16 @@ class AnomalyDetectorService:
         self._ml_success_count = 0
         self._ml_error_count = 0
         
+        # ML WARM-UP: Track initialization state
+        self._ml_warmup_complete = False
+        self._ml_warmup_samples_collected = 0
+        
         logger.info("AnomalyDetectorService initialized", extra={
             "detection_methods": ["isolation_forest", "statistical"],
             "min_samples": self.config.min_samples_for_detection,
-            "ml_circuit_breaker_threshold": 3,
-            "ml_circuit_breaker_timeout": 300.0
+            "ml_circuit_breaker_threshold": self._ml_failure_threshold,
+            "ml_circuit_breaker_timeout": 300.0,
+            "ml_warmup_samples": self.config.ml_warmup_samples
         })
     
     async def detect_anomalies(self, metrics: List[SystemMetrics]) -> List[AnomalyResult]:
@@ -455,6 +493,16 @@ class AnomalyDetectorService:
         if not metrics:
             logger.warning("No metrics provided for anomaly detection")
             return []
+        
+        # ML WARM-UP: Track sample collection for warm-up phase
+        if not self._ml_warmup_complete:
+            self._ml_warmup_samples_collected += 1
+            if self._ml_warmup_samples_collected >= self.config.ml_warmup_samples:
+                self._ml_warmup_complete = True
+                logger.info("ML warm-up phase completed", extra={
+                    "warmup_samples_collected": self._ml_warmup_samples_collected,
+                    "warmup_samples_required": self.config.ml_warmup_samples
+                })
         
         results = []
         
@@ -472,7 +520,9 @@ class AnomalyDetectorService:
             logger.info("Anomaly detection completed", extra={
                 "total_anomalies": total_anomalies,
                 "detection_methods": len(results),
-                "latest_timestamp": metrics[-1].timestamp.isoformat() if metrics else None
+                "latest_timestamp": metrics[-1].timestamp.isoformat() if metrics else None,
+                "ml_warmup_complete": self._ml_warmup_complete,
+                "ml_warmup_samples": self._ml_warmup_samples_collected
             })
             
             return results

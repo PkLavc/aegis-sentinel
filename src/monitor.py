@@ -18,6 +18,10 @@ import aiohttp
 import psutil
 from pydantic import BaseModel, Field, validator
 
+class MetricCollectionError(Exception):
+    """Custom exception for metric collection failures."""
+    pass
+
 logger = logging.getLogger(__name__)
 
 
@@ -222,7 +226,7 @@ class SystemMonitor:
                 network_sent = network.bytes_sent
                 network_recv = network.bytes_recv
                 
-                # RACE CONDITION FIX: Use asyncio.Lock for network counter protection
+                # ATOMIC INTEGRITY: Use asyncio.Lock for network counter protection
                 async with self._network_lock:
                     try:
                         # ATOMIC OPERATION: Calculate differential and update state in single lock
@@ -238,17 +242,16 @@ class SystemMonitor:
                         self._network_counters['recv'] = network_recv
                         
                     except Exception as e:
-                        # CRITICAL ERROR HANDLING: Log and continue with safe defaults
-                        logger.error("Network counter update failed - using safe defaults", exc_info=True, extra={
+                        # ATOMIC INTEGRITY: If network counters fail, discard this metric point
+                        logger.error("Network counter update failed - discarding metric point", exc_info=True, extra={
                             "error_type": type(e).__name__,
                             "error_message": str(e),
                             "network_sent": network_sent,
                             "network_recv": network_recv,
                             "previous_counters": self._network_counters
                         })
-                        # Continue with zero differential to prevent data corruption
-                        network_sent_diff = 0
-                        network_recv_diff = 0
+                        # Raise custom exception to discard this metric point
+                        raise MetricCollectionError(f"Network counter update failed: {str(e)}")
             
             metrics = SystemMetrics(
                 timestamp=datetime.now(),

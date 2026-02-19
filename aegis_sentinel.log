@@ -2396,3 +2396,282 @@ docker.errors.DockerException: Error while fetching server API version: (2, 'Cre
 2026-02-18 21:56:30,477 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
 2026-02-18 21:56:30,477 - src.detector - WARNING - Insufficient data for statistical analysis
 2026-02-18 21:56:30,478 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:56:41,500 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:56:41,500 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:56:41,500 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:56:41,500 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:57:29,226 - src.monitor - INFO - SystemMonitor initialized
+2026-02-18 21:57:29,226 - src.detector - INFO - IsolationForestDetector initialized
+2026-02-18 21:57:29,226 - src.detector - INFO - StatisticalDetector initialized
+2026-02-18 21:57:29,226 - src.detector - INFO - AnomalyDetectorService initialized
+2026-02-18 21:57:33,332 - src.healer - WARNING - Docker TCP connection failed, entering monitor-only mode
+2026-02-18 21:57:33,333 - src.healer - INFO - Cache recovery handler initialized
+2026-02-18 21:57:33,333 - src.healer - INFO - Service recovery handler initialized
+2026-02-18 21:57:33,333 - src.healer - INFO - Recovery engine initialized
+2026-02-18 21:57:33,333 - main - INFO - Aegis Sentinel initialized
+2026-02-18 21:57:33,333 - main - INFO - Starting Aegis Sentinel service
+2026-02-18 21:57:33,333 - src.monitor - INFO - System monitoring started
+2026-02-18 21:57:33,333 - main - INFO - Aegis Sentinel service started successfully
+2026-02-18 21:57:33,333 - main - INFO - Aegis Sentinel is running. Press Ctrl+C to stop.
+2026-02-18 21:57:34,344 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:57:34,344 - src.detector - INFO - Creating synthetic training data for Isolation Forest model
+2026-02-18 21:57:34,433 - src.detector - INFO - Isolation Forest model trained with synthetic data
+2026-02-18 21:57:34,433 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:57:34,433 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:57:34,433 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:57:45,356 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:57:45,356 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:57:45,356 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:57:56,374 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:57:56,375 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:57:56,375 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:58:07,385 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:58:07,385 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:58:07,385 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:58:18,402 - src.monitor - INFO - Internal health check
+2026-02-18 21:58:18,402 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:58:18,402 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:58:18,402 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:58:29,415 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:58:29,415 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:58:29,415 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:58:40,434 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:58:40,434 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:58:40,434 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:58:51,458 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:58:51,458 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:58:51,458 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:59:02,476 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:59:02,476 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:59:02,476 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:59:13,494 - src.monitor - INFO - Internal health check
+2026-02-18 21:59:13,494 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:59:13,494 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:59:13,494 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:59:24,510 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:59:24,510 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:59:24,510 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:59:35,533 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:59:35,533 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:59:35,533 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:59:46,642 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:59:46,642 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:59:46,642 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:59:57,653 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 21:59:57,653 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:59:57,653 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:00:08,663 - src.monitor - INFO - Internal health check
+2026-02-18 22:00:08,663 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:00:08,663 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:00:08,663 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:00:19,688 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:00:19,688 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:00:19,688 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:00:30,789 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:00:30,789 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:00:30,789 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:00:41,811 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:00:41,811 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:00:41,811 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:00:52,881 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:00:52,881 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:00:52,881 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:01:03,896 - src.monitor - INFO - Internal health check
+2026-02-18 22:01:03,897 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:01:03,897 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:01:03,897 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:01:14,922 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:01:14,922 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:01:14,922 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:01:25,944 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:01:25,944 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:01:25,944 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:01:36,963 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:01:36,964 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:01:36,964 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:01:47,985 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:01:47,986 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:01:47,986 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:01:58,999 - src.monitor - INFO - Internal health check
+2026-02-18 22:01:58,999 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:01:58,999 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:01:58,999 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:02:10,043 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:02:10,043 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:02:10,044 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:02:21,070 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:02:21,070 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:02:21,070 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:02:32,080 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:02:32,080 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:02:32,081 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:02:43,102 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:02:43,102 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:02:43,102 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:02:54,151 - src.monitor - INFO - Internal health check
+2026-02-18 22:02:54,151 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:02:54,152 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:02:54,152 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:03:05,179 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:03:05,179 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:03:05,179 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:03:16,198 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:03:16,198 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:03:16,198 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:03:27,215 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:03:27,215 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:03:27,215 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:03:38,232 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:03:38,232 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:03:38,233 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:03:49,242 - src.monitor - INFO - Internal health check
+2026-02-18 22:03:49,243 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:03:49,243 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:03:49,243 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:04:00,262 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:04:00,263 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:04:00,263 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:04:11,290 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:04:11,291 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:04:11,291 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:04:22,310 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:04:22,310 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:04:22,310 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:04:33,331 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:04:33,331 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:04:33,331 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:04:44,373 - src.monitor - INFO - Internal health check
+2026-02-18 22:04:44,373 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:04:44,373 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:04:44,373 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:04:55,391 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:04:55,392 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:04:55,392 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:05:06,414 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:05:06,415 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:05:06,415 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:05:17,428 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:05:17,428 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:05:17,428 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:05:28,441 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:05:28,441 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:05:28,441 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:05:39,464 - src.monitor - INFO - Internal health check
+2026-02-18 22:05:39,465 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:05:39,465 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:05:39,465 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:05:50,479 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:05:50,480 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:05:50,480 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:06:01,496 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:06:01,496 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:06:01,496 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:06:12,526 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:06:12,526 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:06:12,526 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:06:23,542 - src.detector - CRITICAL - ML model unavailable - SYSTEM BLINDNESS RISK DETECTED
+2026-02-18 22:06:23,543 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:06:23,543 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:06:34,553 - src.monitor - INFO - Internal health check
+2026-02-18 22:06:34,584 - src.detector - INFO - Statistical analysis completed
+2026-02-18 22:06:34,585 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:06:45,620 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:06:56,600 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:07:07,617 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:07:07,617 - main - WARNING - Anomaly detected
+2026-02-18 22:07:07,617 - src.healer - WARNING - No recovery actions available for anomaly
+2026-02-18 22:07:07,617 - main - WARNING - No recovery actions were successful
+2026-02-18 22:07:18,637 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:07:29,644 - src.monitor - INFO - Internal health check
+2026-02-18 22:07:29,685 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:07:40,675 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:07:40,676 - main - WARNING - Anomaly detected
+2026-02-18 22:07:40,676 - src.healer - WARNING - No recovery actions available for anomaly
+2026-02-18 22:07:40,676 - main - WARNING - No recovery actions were successful
+2026-02-18 22:07:51,709 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:07:51,709 - main - WARNING - Anomaly detected
+2026-02-18 22:07:51,709 - src.healer - WARNING - No recovery actions available for anomaly
+2026-02-18 22:07:51,709 - main - WARNING - No recovery actions were successful
+2026-02-18 22:25:31,446 - src.monitor - INFO - SystemMonitor initialized
+2026-02-18 22:25:31,446 - src.detector - INFO - IsolationForestDetector initialized
+2026-02-18 22:25:31,446 - src.detector - INFO - StatisticalDetector initialized
+2026-02-18 22:25:31,446 - src.detector - INFO - AnomalyDetectorService initialized
+2026-02-18 22:25:35,537 - src.healer - WARNING - Docker TCP connection failed, entering monitor-only mode
+2026-02-18 22:25:35,537 - src.healer - INFO - Cache recovery handler initialized
+2026-02-18 22:25:35,537 - src.healer - INFO - Service recovery handler initialized
+2026-02-18 22:25:35,537 - src.healer - INFO - Recovery engine initialized
+2026-02-18 22:25:35,537 - main - INFO - Aegis Sentinel initialized
+2026-02-18 22:25:35,537 - main - INFO - Starting Aegis Sentinel service
+2026-02-18 22:25:35,537 - src.monitor - INFO - System monitoring started
+2026-02-18 22:25:35,537 - main - INFO - Aegis Sentinel service started successfully
+2026-02-18 22:25:35,537 - main - INFO - Aegis Sentinel is running. Press Ctrl+C to stop.
+2026-02-18 22:25:36,547 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 22:25:36,547 - src.detector - INFO - Creating synthetic training data for Isolation Forest model
+2026-02-18 22:25:36,637 - src.detector - INFO - Isolation Forest model trained with synthetic data
+2026-02-18 22:25:36,637 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:25:36,637 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:25:36,638 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:25:47,560 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:25:47,560 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:25:47,560 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:25:58,576 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:25:58,576 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:25:58,576 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:26:09,597 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:26:09,597 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:26:09,597 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:26:20,609 - src.monitor - INFO - Internal health check
+2026-02-18 22:26:20,609 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:26:20,609 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:26:20,609 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:26:31,621 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:26:31,621 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:26:31,621 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:26:42,636 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:26:42,636 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:26:42,636 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:26:53,651 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:26:53,651 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:26:53,651 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:27:04,666 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:27:04,666 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:27:04,666 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:27:15,681 - src.monitor - INFO - Internal health check
+2026-02-18 22:27:15,682 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:27:15,682 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:27:15,682 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:27:26,699 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:27:26,699 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:27:26,699 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:27:37,752 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:27:37,752 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:27:37,752 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:27:48,770 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:27:48,770 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:27:48,770 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:27:59,793 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:27:59,793 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:27:59,794 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:28:10,820 - src.monitor - INFO - Internal health check
+2026-02-18 22:28:10,820 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:28:10,820 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:28:10,820 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:28:21,841 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:28:21,841 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:28:21,841 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:28:32,860 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:28:32,860 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:28:32,860 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:28:43,869 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:28:43,869 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:28:43,869 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:28:54,883 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:28:54,883 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:28:54,883 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:29:05,896 - src.monitor - INFO - Internal health check
+2026-02-18 22:29:05,897 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:29:05,897 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:29:05,897 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:29:16,905 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:29:16,905 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:29:16,906 - src.detector - INFO - Anomaly detection completed
