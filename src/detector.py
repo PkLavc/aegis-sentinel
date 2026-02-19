@@ -357,7 +357,7 @@ class StatisticalDetector(AnomalyDetector):
                 std = stats['std']
                 
                 if std > 0:
-                    # STATISTICAL LOGIC FIX: Use absolute value for z-score comparison
+                    # Z-SCORE NORMALIZATION: Use absolute value for z-score comparison
                     z_score = abs((current_value - mean) / std)
                     max_deviation = max(max_deviation, z_score)
                     

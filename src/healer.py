@@ -17,9 +17,24 @@ from typing import Dict, List, Optional, Union
 
 import docker
 import docker.errors
+from enum import Enum
 from pydantic import BaseModel, Field, validator
 
 from .detector import AnomalyResult
+
+class ActionType(str, Enum):
+    """Enum for supported recovery action types."""
+    RESTART_CONTAINER = "restart_container"
+    FLUSH_CACHE = "flush_cache"
+    SCALE_SERVICE = "scale_service"
+    RESTART_SERVICE = "restart_service"
+    CLEAR_LOGS = "clear_logs"
+    KILL_PROCESS = "kill_process"
+
+class CacheType(str, Enum):
+    """Enum for supported cache types."""
+    REDIS = "redis"
+    MEMCACHED = "memcached"
 
 logger = logging.getLogger(__name__)
 

@@ -75,8 +75,8 @@ class SystemMonitor:
         """Initialize the system monitor with configuration."""
         self.config = config or MonitoringConfig()
         # Use deque with max length for automatic memory management
-        self._metrics_buffer: deque[SystemMetrics] = deque(maxlen=1000)
-        self._api_metrics_buffer: deque[APIMetrics] = deque(maxlen=1000)
+        self._metrics_buffer: deque[SystemMetrics] = deque(maxlen=5000)
+        self._api_metrics_buffer: deque[APIMetrics] = deque(maxlen=5000)
         self._network_counters: Dict[str, int] = {}
         self._network_lock = asyncio.Lock()  # Thread-safe protection for network counters
         self._buffer_lock = asyncio.Lock()  # Atomic buffer synchronization
@@ -238,8 +238,12 @@ class SystemMonitor:
                             network_recv_diff = 0
                         
                         # ATOMIC UPDATE: Update counters atomically to prevent race conditions
-                        self._network_counters['sent'] = network_sent
-                        self._network_counters['recv'] = network_recv
+                        # Use dict.copy() to avoid lateral mutation
+                        new_counters = {
+                            'sent': network_sent,
+                            'recv': network_recv
+                        }
+                        self._network_counters = new_counters.copy()
                         
                     except Exception as e:
                         # ATOMIC INTEGRITY: If network counters fail, discard this metric point
@@ -366,7 +370,13 @@ class SystemMonitor:
                 "error_type": type(e).__name__,
                 "error_message": str(e)
             })
-            # Continue operating - buffer may grow but system remains functional
+        finally:
+            # MEMORY HARDENING: Ensure buffer health even if cleanup fails
+            if len(self._metrics_buffer) > 4500:  # 90% of maxlen=5000
+                logger.warning("System metrics buffer approaching capacity limit", extra={
+                    "buffer_size": len(self._metrics_buffer),
+                    "maxlen": 5000
+                })
         
         try:
             # TRUE DEQUE MEMORY MANAGEMENT: Use popleft() for API metrics as well
@@ -380,7 +390,13 @@ class SystemMonitor:
                 "error_type": type(e).__name__,
                 "error_message": str(e)
             })
-            # Continue operating - buffer may grow but system remains functional
+        finally:
+            # MEMORY HARDENING: Ensure buffer health even if cleanup fails
+            if len(self._api_metrics_buffer) > 4500:  # 90% of maxlen=5000
+                logger.warning("API metrics buffer approaching capacity limit", extra={
+                    "buffer_size": len(self._api_metrics_buffer),
+                    "maxlen": 5000
+                })
     
     def get_latest_metrics(self, limit: int = 100) -> List[SystemMetrics]:
         """Get the latest system metrics from the buffer."""
