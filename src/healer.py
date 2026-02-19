@@ -113,9 +113,54 @@ class DockerRecoveryHandler(RecoveryActionHandler):
         self._monitor_only_mode = False
         self._init_lock = asyncio.Lock()  # ATOMIC DOCKER INIT: Singleton protection
         self._init_complete = False
+        self._initialized = False  # FIX: Track initialization state
+    
+    async def start(self) -> None:
+        """Initialize the Docker client asynchronously."""
+        if self._initialized:
+            return
         
-        # ATOMIC DOCKER INIT: Use async initialization pattern
-        asyncio.create_task(self._initialize_docker_client())
+        async with self._init_lock:  # ATOMIC DOCKER INIT: Single initialization
+            if self._initialized:
+                return
+            
+            try:
+                # DOCKER WINDOWS COMPATIBILITY: Try different connection methods
+                import platform
+                if platform.system() == 'Windows':
+                    # On Windows, try TCP connection if named pipe fails
+                    try:
+                        self._docker_client = docker.from_env()
+                        self._monitor_only_mode = False
+                        logger.info("Docker recovery handler initialized via named pipe")
+                    except docker.errors.DockerException:
+                        try:
+                            # Try TCP connection on Windows
+                            self._docker_client = docker.DockerClient(base_url='tcp://localhost:2375')
+                            self._monitor_only_mode = False
+                            logger.info("Docker recovery handler initialized via TCP")
+                        except docker.errors.DockerException as tcp_error:
+                            logger.warning("Docker TCP connection failed, entering monitor-only mode", extra={
+                                "error_type": type(tcp_error).__name__,
+                                "error_message": str(tcp_error)
+                            })
+                            self._monitor_only_mode = True
+                            self._docker_client = None
+                else:
+                    # On Linux/macOS, use standard connection
+                    self._docker_client = docker.from_env()
+                    self._monitor_only_mode = False
+                    logger.info("Docker recovery handler initialized")
+                    
+            except docker.errors.DockerException as e:
+                logger.warning("Docker client initialization failed - entering monitor-only mode", exc_info=True, extra={
+                    "error_type": type(e).__name__,
+                    "error_message": str(e)
+                })
+                self._monitor_only_mode = True
+                self._docker_client = None
+            
+            self._initialized = True
     
     async def _initialize_docker_client(self) -> None:
         """Initialize Docker client with atomic operations and race condition protection."""

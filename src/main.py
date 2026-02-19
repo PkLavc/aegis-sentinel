@@ -41,6 +41,9 @@ class AegisSentinel:
         self.detector = AnomalyDetectorService(self.detection_config)
         self.recovery = RecoveryEngine(self.recovery_config)
         
+        # FIX: Initialize Docker handlers asynchronously
+        asyncio.create_task(self._initialize_recovery_handlers())
+        
         # State management
         self._running = False
         self._monitor_task: Optional[asyncio.Task] = None
@@ -123,6 +126,19 @@ class AegisSentinel:
                 pass
         
         logger.info("Aegis Sentinel service stopped")
+    
+    async def _initialize_recovery_handlers(self) -> None:
+        """Initialize recovery handlers asynchronously."""
+        try:
+            # Initialize Docker handlers if they exist
+            for handler in self.recovery._handlers:
+                if hasattr(handler, 'start') and hasattr(handler, '_docker_client'):
+                    await handler.start()
+        except Exception as e:
+            logger.warning("Failed to initialize recovery handlers", exc_info=True, extra={
+                "error_type": type(e).__name__,
+                "error_message": str(e)
+            })
     
     async def _detection_loop(self) -> None:
         """Main detection and recovery loop."""

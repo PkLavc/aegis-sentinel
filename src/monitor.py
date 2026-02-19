@@ -95,12 +95,12 @@ class SystemMonitor:
         api_circuit_breaker_enabled = False
         
         try:
-            # Try to access the actual value, not the FieldInfo object
+            # FIX: Use proper dataclass attribute access for MonitoringConfig
             if hasattr(self.config, 'api_endpoints') and self.config.api_endpoints is not None:
                 api_endpoints_count = len(self.config.api_endpoints)
                 api_circuit_breaker_enabled = len(self.config.api_endpoints) > 0
-        except (TypeError, AttributeError):
-            # Fallback for Pydantic FieldInfo objects
+        except (TypeError, AttributeError, ValueError):
+            # Fallback for any access issues
             api_endpoints_count = 0
             api_circuit_breaker_enabled = False
         
@@ -444,21 +444,32 @@ class SystemMonitor:
                 "error_message": str(e)
             })
         finally:
-            # HARD BUFFER LIMITS: Force cleanup to maintain 20% safety margin
-            if len(self._metrics_buffer) > 5000:  # Exceeds hard limit
-                logger.critical("System metrics buffer exceeded hard limit - forcing cleanup", extra={
-                    "buffer_size": len(self._metrics_buffer),
-                    "hard_limit": 5000,
-                    "safety_margin": "20%"
+            # FIX: Ensure memory pointer is properly released even if exception occurs during logging
+            try:
+                # HARD BUFFER LIMITS: Force cleanup to maintain 20% safety margin
+                if len(self._metrics_buffer) > 5000:  # Exceeds hard limit
+                    logger.critical("System metrics buffer exceeded hard limit - forcing cleanup", extra={
+                        "buffer_size": len(self._metrics_buffer),
+                        "hard_limit": 5000,
+                        "safety_margin": "20%"
+                    })
+                    # Force reduce to 4000 (20% safety margin below 5000)
+                    while len(self._metrics_buffer) > 4000:
+                        self._metrics_buffer.popleft()
+                elif len(self._metrics_buffer) > 4500:  # 90% of maxlen=5000
+                    logger.warning("System metrics buffer approaching capacity limit", extra={
+                        "buffer_size": len(self._metrics_buffer),
+                        "maxlen": 5000
+                    })
+            except Exception as cleanup_error:
+                # CRITICAL: Ensure buffer cleanup continues even if logging fails
+                logger.error("Buffer cleanup failed during safety margin enforcement", exc_info=True, extra={
+                    "error_type": type(cleanup_error).__name__,
+                    "error_message": str(cleanup_error)
                 })
-                # Force reduce to 4000 (20% safety margin below 5000)
-                while len(self._metrics_buffer) > 4000:
-                    self._metrics_buffer.popleft()
-            elif len(self._metrics_buffer) > 4500:  # 90% of maxlen=5000
-                logger.warning("System metrics buffer approaching capacity limit", extra={
-                    "buffer_size": len(self._metrics_buffer),
-                    "maxlen": 5000
-                })
+                # Force minimal cleanup to prevent memory exhaustion
+                if len(self._metrics_buffer) > 4000:
+                    self._metrics_buffer = deque(list(self._metrics_buffer)[-4000:], maxlen=5000)
         
         try:
             # TRUE DEQUE MEMORY MANAGEMENT: Use popleft() for API metrics as well
@@ -473,21 +484,32 @@ class SystemMonitor:
                 "error_message": str(e)
             })
         finally:
-            # HARD BUFFER LIMITS: Force cleanup to maintain 20% safety margin
-            if len(self._api_metrics_buffer) > 5000:  # Exceeds hard limit
-                logger.critical("API metrics buffer exceeded hard limit - forcing cleanup", extra={
-                    "buffer_size": len(self._api_metrics_buffer),
-                    "hard_limit": 5000,
-                    "safety_margin": "20%"
+            # FIX: Ensure memory pointer is properly released even if exception occurs during logging
+            try:
+                # HARD BUFFER LIMITS: Force cleanup to maintain 20% safety margin
+                if len(self._api_metrics_buffer) > 5000:  # Exceeds hard limit
+                    logger.critical("API metrics buffer exceeded hard limit - forcing cleanup", extra={
+                        "buffer_size": len(self._api_metrics_buffer),
+                        "hard_limit": 5000,
+                        "safety_margin": "20%"
+                    })
+                    # Force reduce to 4000 (20% safety margin below 5000)
+                    while len(self._api_metrics_buffer) > 4000:
+                        self._api_metrics_buffer.popleft()
+                elif len(self._api_metrics_buffer) > 4500:  # 90% of maxlen=5000
+                    logger.warning("API metrics buffer approaching capacity limit", extra={
+                        "buffer_size": len(self._api_metrics_buffer),
+                        "maxlen": 5000
+                    })
+            except Exception as cleanup_error:
+                # CRITICAL: Ensure buffer cleanup continues even if logging fails
+                logger.error("Buffer cleanup failed during safety margin enforcement", exc_info=True, extra={
+                    "error_type": type(cleanup_error).__name__,
+                    "error_message": str(cleanup_error)
                 })
-                # Force reduce to 4000 (20% safety margin below 5000)
-                while len(self._api_metrics_buffer) > 4000:
-                    self._api_metrics_buffer.popleft()
-            elif len(self._api_metrics_buffer) > 4500:  # 90% of maxlen=5000
-                logger.warning("API metrics buffer approaching capacity limit", extra={
-                    "buffer_size": len(self._api_metrics_buffer),
-                    "maxlen": 5000
-                })
+                # Force minimal cleanup to prevent memory exhaustion
+                if len(self._api_metrics_buffer) > 4000:
+                    self._api_metrics_buffer = deque(list(self._api_metrics_buffer)[-4000:], maxlen=5000)
     
     def get_latest_metrics(self, limit: int = 100) -> List[SystemMetrics]:
         """Get the latest system metrics from the buffer."""
