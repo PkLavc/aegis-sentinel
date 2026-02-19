@@ -228,14 +228,15 @@ class SystemMonitor:
                     try:
                         # ATOMIC OPERATION: Calculate differential and update state in single lock
                         if self._network_counters:
-                            network_sent_diff = network_sent - self._network_counters.get('sent', 0)
-                            network_recv_diff = network_recv - self._network_counters.get('recv', 0)
+                            network_sent_diff = network_sent - self._network_counters['sent']
+                            network_recv_diff = network_recv - self._network_counters['recv']
                         else:
                             network_sent_diff = 0
                             network_recv_diff = 0
                         
-                        # ATOMIC UPDATE: Update counters as single operation
-                        self._network_counters = {'sent': network_sent, 'recv': network_recv}
+                        # ATOMIC UPDATE: Update counters atomically to prevent race conditions
+                        self._network_counters['sent'] = network_sent
+                        self._network_counters['recv'] = network_recv
                         
                     except Exception as e:
                         # CRITICAL ERROR HANDLING: Log and continue with safe defaults

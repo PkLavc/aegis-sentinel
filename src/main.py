@@ -57,7 +57,12 @@ class AegisSentinel:
             'recovery_actions_triggered': 0,
             'recovery_actions_successful': 0,
             'start_time': None,
-            'last_detection_time': None
+            'last_detection_time': None,
+            # ML Health Check Metrics
+            'ml_fallback_count': 0,
+            'ml_success_count': 0,
+            'ml_error_count': 0,
+            'system_blindness_events': 0
         }
         
         logger.info("Aegis Sentinel initialized", extra={

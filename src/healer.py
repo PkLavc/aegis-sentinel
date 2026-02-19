@@ -690,8 +690,8 @@ class RecoveryEngine:
             """Execute action with aligned timeouts and guaranteed semaphore release."""
             semaphore_acquired = False
             try:
-                # CONCURRENCY ALIGNMENT: Semaphore timeout must be >= action timeout
-                semaphore_timeout = max(30.0, action.timeout)  # Ensure semaphore timeout >= action timeout
+                # TIMEOUT SYNCHRONIZATION: Semaphore timeout must be >= action timeout + buffer
+                semaphore_timeout = action.timeout + 10.0  # Ensure semaphore timeout > action timeout
                 
                 # Use native async context manager for automatic semaphore release
                 async with asyncio.timeout(semaphore_timeout):
@@ -713,11 +713,13 @@ class RecoveryEngine:
                 
             except asyncio.TimeoutError:
                 if not semaphore_acquired:
-                    logger.error("Semaphore acquisition timed out", extra={
+                    logger.error("Semaphore acquisition timed out - RESOURCE SATURATION DETECTED", extra={
                         "action_id": action.action_id,
                         "max_concurrent_actions": self.config.max_concurrent_actions,
                         "semaphore_timeout": semaphore_timeout,
-                        "action_timeout": action.timeout
+                        "action_timeout": action.timeout,
+                        "circuit_state": self._circuit_breaker.get_state(),
+                        "failure_count": self._circuit_breaker.failure_count
                     })
                     return RecoveryResult(
                         action_id=action.action_id,
@@ -726,7 +728,7 @@ class RecoveryEngine:
                         action_type=action.action_type,
                         target=action.target,
                         execution_time=0.0,
-                        error_message=f"Semaphore acquisition timeout ({semaphore_timeout}s)",
+                        error_message=f"Semaphore acquisition timeout ({semaphore_timeout}s) - RESOURCE SATURATION",
                         retry_count=0,
                         final_state="timeout"
                     )

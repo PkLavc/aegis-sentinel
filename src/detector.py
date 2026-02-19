@@ -78,14 +78,25 @@ class IsolationForestDetector(AnomalyDetector):
         if not self._trained:
             await self._train_model(metrics)
         
-        if not self._trained or len(metrics) < self.config.min_samples_for_detection:
+        # FAIL-FAST ML VALIDATION: Check if model is properly trained and available
+        if not self._trained or self._model is None or len(metrics) < self.config.min_samples_for_detection:
+            # CRITICAL: Emit alert and delegate to statistical fallback
+            logger.critical("ML model unavailable - SYSTEM BLINDNESS RISK DETECTED", extra={
+                "model_trained": self._trained,
+                "model_exists": self._model is not None,
+                "sufficient_data": len(metrics) >= self.config.min_samples_for_detection,
+                "required_samples": self.config.min_samples_for_detection,
+                "available_samples": len(metrics)
+            })
+            
+            # DELEGATE TO STATISTICAL FALLBACK: Ensure monitoring continues
             return AnomalyResult(
                 timestamp=datetime.now(),
-                metric_type="system_isolation_forest",
+                metric_type="system_isolation_forest_fallback",
                 anomaly_detected=False,
                 confidence_score=0.0,
                 metric_values={},
-                anomaly_description="Insufficient data for detection",
+                anomaly_description="ML model unavailable - delegated to statistical detection",
                 severity_level="unknown"
             )
         
@@ -99,25 +110,6 @@ class IsolationForestDetector(AnomalyDetector):
             ]])
             
             # Predict anomaly - ML Safety: Explicit model state validation
-            if self._model is None:
-                logger.warning("Model not initialized - returning safe default", extra={
-                    "metric_type": "system_isolation_forest",
-                    "action": "return_safe_default"
-                })
-                return AnomalyResult(
-                    timestamp=datetime.now(),
-                    metric_type="system_isolation_forest",
-                    anomaly_detected=False,
-                    confidence_score=0.0,
-                    metric_values={
-                        "cpu_percent": latest_metrics.cpu_percent,
-                        "memory_percent": latest_metrics.memory_percent,
-                        "disk_usage_percent": latest_metrics.disk_usage_percent
-                    },
-                    anomaly_description="Model not initialized - safe default",
-                    severity_level="unknown"
-                )
-            
             anomaly_score = self._model.decision_function(features)[0]
             is_anomaly = self._model.predict(features)[0] == -1
             
@@ -154,11 +146,22 @@ class IsolationForestDetector(AnomalyDetector):
             return result
             
         except Exception as e:
-            logger.error("Error in Isolation Forest detection", exc_info=True, extra={
+            # CRITICAL: Log error and delegate to statistical fallback
+            logger.critical("ML model failed - SYSTEM BLINDNESS RISK DETECTED", exc_info=True, extra={
                 "error_type": type(e).__name__,
                 "error_message": str(e)
             })
-            raise
+            
+            # DELEGATE TO STATISTICAL FALLBACK: Ensure monitoring continues
+            return AnomalyResult(
+                timestamp=datetime.now(),
+                metric_type="system_isolation_forest_fallback",
+                anomaly_detected=False,
+                confidence_score=0.0,
+                metric_values={},
+                anomaly_description=f"ML model failed: {str(e)} - delegated to statistical detection",
+                severity_level="unknown"
+            )
     
     def is_trained(self) -> bool:
         """Check if the detector has been trained."""
@@ -392,6 +395,11 @@ class AnomalyDetectorService:
         self._ml_recovery_timeout = 300.0
         self._last_failure_time = None
         self._statistical_only_mode = False
+        
+        # HEALTH CHECK METRICS: Track fallback usage for ML failures
+        self._ml_fallback_count = 0
+        self._ml_success_count = 0
+        self._ml_error_count = 0
         
         logger.info("AnomalyDetectorService initialized", extra={
             "detection_methods": ["isolation_forest", "statistical"],
