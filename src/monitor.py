@@ -307,13 +307,34 @@ class SystemMonitor:
         """Clean up old metrics from buffers based on TTL (30 minutes) using efficient deque operations."""
         cutoff_time = datetime.now() - timedelta(minutes=30)
         
-        # TRUE DEQUE MEMORY MANAGEMENT: Use popleft() to maintain O(1) complexity
-        while self._metrics_buffer and self._metrics_buffer[0].timestamp < cutoff_time:
-            self._metrics_buffer.popleft()
+        # ATOMIC BUFFER CLEANUP: Robust cleanup with exception handling for graceful degradation
+        try:
+            # TRUE DEQUE MEMORY MANAGEMENT: Use popleft() to maintain O(1) complexity
+            while self._metrics_buffer and self._metrics_buffer[0].timestamp < cutoff_time:
+                self._metrics_buffer.popleft()
+        except Exception as e:
+            # GRACEFUL DEGRADATION: Log critical error but continue operating
+            logger.critical("Failed to cleanup system metrics buffer", exc_info=True, extra={
+                "buffer_size": len(self._metrics_buffer),
+                "cutoff_time": cutoff_time.isoformat(),
+                "error_type": type(e).__name__,
+                "error_message": str(e)
+            })
+            # Continue operating - buffer may grow but system remains functional
         
-        # TRUE DEQUE MEMORY MANAGEMENT: Use popleft() for API metrics as well
-        while self._api_metrics_buffer and self._api_metrics_buffer[0].timestamp < cutoff_time:
-            self._api_metrics_buffer.popleft()
+        try:
+            # TRUE DEQUE MEMORY MANAGEMENT: Use popleft() for API metrics as well
+            while self._api_metrics_buffer and self._api_metrics_buffer[0].timestamp < cutoff_time:
+                self._api_metrics_buffer.popleft()
+        except Exception as e:
+            # GRACEFUL DEGRADATION: Log critical error but continue operating
+            logger.critical("Failed to cleanup API metrics buffer", exc_info=True, extra={
+                "buffer_size": len(self._api_metrics_buffer),
+                "cutoff_time": cutoff_time.isoformat(),
+                "error_type": type(e).__name__,
+                "error_message": str(e)
+            })
+            # Continue operating - buffer may grow but system remains functional
     
     def get_latest_metrics(self, limit: int = 100) -> List[SystemMetrics]:
         """Get the latest system metrics from the buffer."""

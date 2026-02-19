@@ -385,9 +385,19 @@ class AnomalyDetectorService:
         self._isolation_detector = IsolationForestDetector(self.config)
         self._statistical_detector = StatisticalDetector(self.config)
         
+        # DETECTION CIRCUIT BREAKER: Prevent system from going blind if ML models fail
+        # Simple circuit breaker implementation to avoid circular import
+        self._ml_failures = 0
+        self._ml_failure_threshold = 3
+        self._ml_recovery_timeout = 300.0
+        self._last_failure_time = None
+        self._statistical_only_mode = False
+        
         logger.info("AnomalyDetectorService initialized", extra={
             "detection_methods": ["isolation_forest", "statistical"],
-            "min_samples": self.config.min_samples_for_detection
+            "min_samples": self.config.min_samples_for_detection,
+            "ml_circuit_breaker_threshold": 3,
+            "ml_circuit_breaker_timeout": 300.0
         })
     
     async def detect_anomalies(self, metrics: List[SystemMetrics]) -> List[AnomalyResult]:

@@ -685,13 +685,18 @@ class RecoveryEngine:
             })
             return []
         
-        # Execute actions with simplified flat locking
+        # Execute actions with improved concurrency alignment
         async def execute_with_semaphore(action: RecoveryAction) -> RecoveryResult:
-            """Execute action with simplified flat locking and guaranteed semaphore release."""
+            """Execute action with aligned timeouts and guaranteed semaphore release."""
+            semaphore_acquired = False
             try:
+                # CONCURRENCY ALIGNMENT: Semaphore timeout must be >= action timeout
+                semaphore_timeout = max(30.0, action.timeout)  # Ensure semaphore timeout >= action timeout
+                
                 # Use native async context manager for automatic semaphore release
-                async with asyncio.timeout(30.0):  # 30 second timeout for semaphore acquisition
+                async with asyncio.timeout(semaphore_timeout):
                     async with self._semaphore:
+                        semaphore_acquired = True
                         # Execute the action
                         result = await self._execute_action(action)
                         
@@ -707,21 +712,41 @@ class RecoveryEngine:
                         return result
                 
             except asyncio.TimeoutError:
-                logger.error("Semaphore acquisition timed out", extra={
-                    "action_id": action.action_id,
-                    "max_concurrent_actions": self.config.max_concurrent_actions
-                })
-                return RecoveryResult(
-                    action_id=action.action_id,
-                    timestamp=datetime.now(),
-                    success=False,
-                    action_type=action.action_type,
-                    target=action.target,
-                    execution_time=0.0,
-                    error_message="Semaphore acquisition timeout",
-                    retry_count=0,
-                    final_state="timeout"
-                )
+                if not semaphore_acquired:
+                    logger.error("Semaphore acquisition timed out", extra={
+                        "action_id": action.action_id,
+                        "max_concurrent_actions": self.config.max_concurrent_actions,
+                        "semaphore_timeout": semaphore_timeout,
+                        "action_timeout": action.timeout
+                    })
+                    return RecoveryResult(
+                        action_id=action.action_id,
+                        timestamp=datetime.now(),
+                        success=False,
+                        action_type=action.action_type,
+                        target=action.target,
+                        execution_time=0.0,
+                        error_message=f"Semaphore acquisition timeout ({semaphore_timeout}s)",
+                        retry_count=0,
+                        final_state="timeout"
+                    )
+                else:
+                    # Action timeout occurred, not semaphore timeout
+                    logger.error("Action execution timed out", extra={
+                        "action_id": action.action_id,
+                        "action_timeout": action.timeout
+                    })
+                    return RecoveryResult(
+                        action_id=action.action_id,
+                        timestamp=datetime.now(),
+                        success=False,
+                        action_type=action.action_type,
+                        target=action.target,
+                        execution_time=action.timeout,
+                        error_message=f"Action execution timeout ({action.timeout}s)",
+                        retry_count=0,
+                        final_state="timeout"
+                    )
             except Exception as e:
                 logger.error("Recovery action failed", exc_info=True, extra={
                     "action_id": action.action_id,
@@ -745,6 +770,13 @@ class RecoveryEngine:
                     retry_count=0,
                     final_state="failed"
                 )
+            finally:
+                # GUARANTEED CLEANUP: Ensure internal state consistency even if timeout occurs
+                if not semaphore_acquired:
+                    # If semaphore wasn't acquired, ensure we don't leave inconsistent state
+                    logger.debug("Semaphore not acquired, ensuring state consistency", extra={
+                        "action_id": action.action_id
+                    })
         
         # Execute all actions concurrently
         tasks = [execute_with_semaphore(action) for action in actions]

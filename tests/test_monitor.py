@@ -11,6 +11,8 @@ import time
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
 # Importações locais
 from src.monitor import APIMetrics, MonitoringConfig, SystemMetrics, SystemMonitor
 
@@ -128,6 +130,7 @@ class TestSystemMonitor:
         """Create a SystemMonitor instance for testing."""
         return SystemMonitor(self.create_monitor_config())
     
+    @pytest.mark.asyncio
     @patch('src.monitor.psutil')
     @patch('src.monitor.aiohttp')
     async def test_collect_system_metrics(self, mock_aiohttp, mock_psutil):

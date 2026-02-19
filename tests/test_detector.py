@@ -10,6 +10,7 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pytest
 
 # Importações locais
 from src.detector import (
@@ -48,7 +49,7 @@ class TestAnomalyResult:
     
     def test_anomaly_result_validation(self):
         """Test that AnomalyResult validates input data correctly."""
-        # Test confidence score too high
+        # Test confidence score too high - PYDANTIC V2 MIGRATION: Validate by error type instead of message
         try:
             AnomalyResult(
                 timestamp=datetime.now(),
@@ -58,9 +59,10 @@ class TestAnomalyResult:
                 metric_values={},
                 severity_level="high"
             )
-            assert False, "Should have raised ValueError for high confidence score"
-        except ValueError as e:
-            assert "ensure this value is less than or equal to 1.0" in str(e)
+            assert False, "Should have raised ValidationError for high confidence score"
+        except Exception as e:
+            # PYDANTIC V2 MIGRATION: Check for ValidationError type instead of specific message
+            assert "ValidationError" in str(type(e)) or "less_than_equal" in str(e)
 
 
 class TestIsolationForestDetector:
@@ -287,7 +289,7 @@ class TestStatisticalDetector:
         assert "memory_percent" in detector._statistics
         assert "disk_usage_percent" in detector._statistics
         
-        cpu_stats = detector._statistics["cpu_percent"]
+        cpu_stats = detector._statistics.get("cpu_percent", {})
         assert "mean" in cpu_stats
         assert "std" in cpu_stats
         assert "min" in cpu_stats
