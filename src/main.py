@@ -15,9 +15,9 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from detector import AnomalyDetectorService, DetectionConfig
-from healer import RecoveryEngine, RecoveryConfig
-from monitor import APIMetrics, MonitoringConfig, SystemMetrics, SystemMonitor
+from src.detector import AnomalyDetectorService, DetectionConfig
+from src.healer import RecoveryEngine, RecoveryConfig
+from src.monitor import APIMetrics, MonitoringConfig, SystemMetrics, SystemMonitor
 
 logger = logging.getLogger(__name__)
 

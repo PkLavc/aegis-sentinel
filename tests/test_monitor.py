@@ -169,7 +169,7 @@ class TestSystemMonitor:
     async def test_collect_api_metrics_success(self, mock_aiohttp):
         """Test that API metrics are collected correctly for successful requests."""
         monitor = self.create_monitor()
-        # Mock aiohttp response
+        # Mock aiohttp response with proper context manager protocol
         mock_response = AsyncMock()
         mock_response.status = 200
         mock_response.__aenter__.return_value = mock_response
@@ -246,9 +246,10 @@ class TestSystemMonitor:
     
     def test_get_latest_metrics(self):
         """Test that latest metrics are retrieved correctly."""
+        from collections import deque
         monitor = self.create_monitor()
-        # Add some test metrics
-        test_metrics = [
+        # Add some test metrics using deque
+        test_metrics = deque([
             SystemMetrics(
                 timestamp=datetime.now(),
                 cpu_percent=50.0,
@@ -259,7 +260,7 @@ class TestSystemMonitor:
                 network_bytes_sent=1000,
                 network_bytes_recv=2000
             )
-        ]
+        ])
         monitor._metrics_buffer = test_metrics
         
         latest = monitor.get_latest_metrics()
@@ -268,9 +269,10 @@ class TestSystemMonitor:
     
     def test_get_latest_api_metrics(self):
         """Test that latest API metrics are retrieved correctly."""
+        from collections import deque
         monitor = self.create_monitor()
-        # Add some test API metrics
-        test_metrics = [
+        # Add some test API metrics using deque
+        test_metrics = deque([
             APIMetrics(
                 timestamp=datetime.now(),
                 endpoint="https://api.example.com/health",
@@ -278,7 +280,7 @@ class TestSystemMonitor:
                 status_code=200,
                 success=True
             )
-        ]
+        ])
         monitor._api_metrics_buffer = test_metrics
         
         latest = monitor.get_latest_api_metrics()
@@ -287,9 +289,10 @@ class TestSystemMonitor:
     
     def test_get_metrics_summary(self):
         """Test that metrics summary is generated correctly."""
+        from collections import deque
         monitor = self.create_monitor()
-        # Add test metrics
-        test_metrics = [
+        # Add test metrics using deque
+        test_metrics = deque([
             SystemMetrics(
                 timestamp=datetime.now(),
                 cpu_percent=50.0,
@@ -300,7 +303,7 @@ class TestSystemMonitor:
                 network_bytes_sent=1000,
                 network_bytes_recv=2000
             )
-        ]
+        ])
         monitor._metrics_buffer = test_metrics
         
         summary = monitor.get_metrics_summary()

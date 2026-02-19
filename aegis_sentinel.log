@@ -973,3 +973,470 @@ docker.errors.DockerException: Error while fetching server API version: (2, 'Cre
 2026-02-18 21:04:55,523 - detector - WARNING - Insufficient data for training Isolation Forest model
 2026-02-18 21:04:55,523 - detector - WARNING - Insufficient data for statistical analysis
 2026-02-18 21:04:55,523 - detector - INFO - Anomaly detection completed
+2026-02-18 21:09:05,552 - monitor - INFO - SystemMonitor initialized
+2026-02-18 21:09:05,552 - detector - INFO - IsolationForestDetector initialized
+2026-02-18 21:09:05,552 - detector - INFO - StatisticalDetector initialized
+2026-02-18 21:09:05,552 - detector - INFO - AnomalyDetectorService initialized
+2026-02-18 21:09:05,564 - healer - WARNING - Docker client initialization failed - entering monitor-only mode
+Traceback (most recent call last):
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 223, in _retrieve_server_version
+    return self.version(api_version=False)["ApiVersion"]
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\daemon.py", line 181, in version
+    return self._result(self._get(url), json=True)
+                        ~~~~~~~~~^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\utils\decorators.py", line 44, in inner
+    return f(self, *args, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 246, in _get
+    return self.get(url, **self._set_request_timeout(kwargs))
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 602, in get
+    return self.request("GET", url, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+    ~~~~~~~~~~~~^
+        method,
+        ^^^^^^^
+    ...<6 lines>...
+        enforce_content_length=enforce_content_length,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connection.py", line 494, in request
+    self.endheaders()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Python314\Lib\http\client.py", line 1333, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\http\client.py", line 1093, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "C:\Python314\Lib\http\client.py", line 1037, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipeconn.py", line 25, in connect
+    sock.connect(self.npipe_path)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 25, in wrapped
+    return f(self, *args, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 76, in connect
+    raise e
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 54, in connect
+    handle = win32file.CreateFile(
+        address,
+    ...<7 lines>...
+        0
+    )
+pywintypes.error: (2, 'CreateFile', 'The system cannot find the file specified.')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "d:\Projects\aegis-sentinel\src\healer.py", line 101, in __init__
+    self._docker_client = docker.from_env()
+                          ~~~~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\client.py", line 94, in from_env
+    return cls(
+        timeout=timeout,
+    ...<3 lines>...
+        **kwargs_from_env(**kwargs)
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\client.py", line 45, in __init__
+    self.api = APIClient(*args, **kwargs)
+               ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 207, in __init__
+    self._version = self._retrieve_server_version()
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 230, in _retrieve_server_version
+    raise DockerException(
+        f'Error while fetching server API version: {e}'
+    ) from e
+docker.errors.DockerException: Error while fetching server API version: (2, 'CreateFile', 'The system cannot find the file specified.')
+2026-02-18 21:09:05,803 - healer - INFO - Cache recovery handler initialized
+2026-02-18 21:09:05,804 - healer - INFO - Service recovery handler initialized
+2026-02-18 21:09:05,804 - healer - INFO - Recovery engine initialized
+2026-02-18 21:09:05,804 - main - INFO - Aegis Sentinel initialized
+2026-02-18 21:09:05,804 - main - INFO - Starting Aegis Sentinel service
+2026-02-18 21:09:05,804 - monitor - INFO - System monitoring started
+2026-02-18 21:09:05,804 - main - INFO - Aegis Sentinel service started successfully
+2026-02-18 21:09:05,804 - main - INFO - Aegis Sentinel is running. Press Ctrl+C to stop.
+2026-02-18 21:09:06,820 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:09:06,820 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:09:06,820 - detector - INFO - Anomaly detection completed
+2026-02-18 21:09:17,834 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:09:17,834 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:09:17,834 - detector - INFO - Anomaly detection completed
+2026-02-18 21:09:28,848 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:09:28,848 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:09:28,848 - detector - INFO - Anomaly detection completed
+2026-02-18 21:09:39,896 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:09:39,896 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:09:39,896 - detector - INFO - Anomaly detection completed
+2026-02-18 21:09:50,919 - monitor - INFO - Internal health check
+2026-02-18 21:09:50,919 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:09:50,919 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:09:50,919 - detector - INFO - Anomaly detection completed
+2026-02-18 21:10:01,930 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:10:01,930 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:10:01,930 - detector - INFO - Anomaly detection completed
+2026-02-18 21:10:12,942 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:10:12,942 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:10:12,942 - detector - INFO - Anomaly detection completed
+2026-02-18 21:10:23,969 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:10:23,969 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:10:23,969 - detector - INFO - Anomaly detection completed
+2026-02-18 21:10:34,988 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:10:34,988 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:10:34,988 - detector - INFO - Anomaly detection completed
+2026-02-18 21:10:46,005 - monitor - INFO - Internal health check
+2026-02-18 21:10:46,005 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:10:46,005 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:10:46,005 - detector - INFO - Anomaly detection completed
+2026-02-18 21:10:57,021 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:10:57,021 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:10:57,022 - detector - INFO - Anomaly detection completed
+2026-02-18 21:11:08,034 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:11:08,034 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:11:08,034 - detector - INFO - Anomaly detection completed
+2026-02-18 21:11:19,057 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:11:19,057 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:11:19,057 - detector - INFO - Anomaly detection completed
+2026-02-18 21:11:30,068 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:11:30,068 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:11:30,068 - detector - INFO - Anomaly detection completed
+2026-02-18 21:11:41,081 - monitor - INFO - Internal health check
+2026-02-18 21:11:41,081 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:11:41,082 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:11:41,082 - detector - INFO - Anomaly detection completed
+2026-02-18 21:11:52,096 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:11:52,096 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:11:52,096 - detector - INFO - Anomaly detection completed
+2026-02-18 21:12:03,130 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:12:03,130 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:12:03,131 - detector - INFO - Anomaly detection completed
+2026-02-18 21:12:14,143 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:12:14,143 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:12:14,143 - detector - INFO - Anomaly detection completed
+2026-02-18 21:12:25,170 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:12:25,170 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:12:25,171 - detector - INFO - Anomaly detection completed
+2026-02-18 21:12:36,195 - monitor - INFO - Internal health check
+2026-02-18 21:12:36,195 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:12:36,195 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:12:36,195 - detector - INFO - Anomaly detection completed
+2026-02-18 21:12:47,225 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:12:47,225 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:12:47,225 - detector - INFO - Anomaly detection completed
+2026-02-18 21:12:58,252 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:12:58,252 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:12:58,252 - detector - INFO - Anomaly detection completed
+2026-02-18 21:13:09,271 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:13:09,271 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:13:09,271 - detector - INFO - Anomaly detection completed
+2026-02-18 21:13:20,292 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:13:20,293 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:13:20,293 - detector - INFO - Anomaly detection completed
+2026-02-18 21:13:31,302 - monitor - INFO - Internal health check
+2026-02-18 21:13:31,302 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:13:31,303 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:13:31,303 - detector - INFO - Anomaly detection completed
+2026-02-18 21:13:42,315 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:13:42,315 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:13:42,315 - detector - INFO - Anomaly detection completed
+2026-02-18 21:13:53,336 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:13:53,336 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:13:53,336 - detector - INFO - Anomaly detection completed
+2026-02-18 21:14:04,348 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:14:04,348 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:14:04,348 - detector - INFO - Anomaly detection completed
+2026-02-18 21:14:15,382 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:14:15,382 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:14:15,382 - detector - INFO - Anomaly detection completed
+2026-02-18 21:14:26,397 - monitor - INFO - Internal health check
+2026-02-18 21:14:26,397 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:14:26,397 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:14:26,397 - detector - INFO - Anomaly detection completed
+2026-02-18 21:14:37,408 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:14:37,408 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:14:37,408 - detector - INFO - Anomaly detection completed
+2026-02-18 21:14:48,429 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:14:48,429 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:14:48,429 - detector - INFO - Anomaly detection completed
+2026-02-18 21:14:59,447 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:14:59,447 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:14:59,447 - detector - INFO - Anomaly detection completed
+2026-02-18 21:15:10,456 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:15:10,457 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:15:10,457 - detector - INFO - Anomaly detection completed
+2026-02-18 21:16:13,811 - monitor - INFO - SystemMonitor initialized
+2026-02-18 21:16:13,811 - detector - INFO - IsolationForestDetector initialized
+2026-02-18 21:16:13,811 - detector - INFO - StatisticalDetector initialized
+2026-02-18 21:16:13,811 - detector - INFO - AnomalyDetectorService initialized
+2026-02-18 21:16:13,813 - healer - WARNING - Docker client initialization failed - entering monitor-only mode
+Traceback (most recent call last):
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 223, in _retrieve_server_version
+    return self.version(api_version=False)["ApiVersion"]
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\daemon.py", line 181, in version
+    return self._result(self._get(url), json=True)
+                        ~~~~~~~~~^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\utils\decorators.py", line 44, in inner
+    return f(self, *args, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 246, in _get
+    return self.get(url, **self._set_request_timeout(kwargs))
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 602, in get
+    return self.request("GET", url, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+    ~~~~~~~~~~~~^
+        method,
+        ^^^^^^^
+    ...<6 lines>...
+        enforce_content_length=enforce_content_length,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connection.py", line 494, in request
+    self.endheaders()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Python314\Lib\http\client.py", line 1333, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\http\client.py", line 1093, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "C:\Python314\Lib\http\client.py", line 1037, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipeconn.py", line 25, in connect
+    sock.connect(self.npipe_path)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 25, in wrapped
+    return f(self, *args, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 76, in connect
+    raise e
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 54, in connect
+    handle = win32file.CreateFile(
+        address,
+    ...<7 lines>...
+        0
+    )
+pywintypes.error: (2, 'CreateFile', 'The system cannot find the file specified.')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "d:\Projects\aegis-sentinel\src\healer.py", line 101, in __init__
+    self._docker_client = docker.from_env()
+                          ~~~~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\client.py", line 94, in from_env
+    return cls(
+        timeout=timeout,
+    ...<3 lines>...
+        **kwargs_from_env(**kwargs)
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\client.py", line 45, in __init__
+    self.api = APIClient(*args, **kwargs)
+               ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 207, in __init__
+    self._version = self._retrieve_server_version()
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 230, in _retrieve_server_version
+    raise DockerException(
+        f'Error while fetching server API version: {e}'
+    ) from e
+docker.errors.DockerException: Error while fetching server API version: (2, 'CreateFile', 'The system cannot find the file specified.')
+2026-02-18 21:16:13,818 - healer - INFO - Cache recovery handler initialized
+2026-02-18 21:16:13,818 - healer - INFO - Service recovery handler initialized
+2026-02-18 21:16:13,818 - healer - INFO - Recovery engine initialized
+2026-02-18 21:16:13,818 - __main__ - INFO - Aegis Sentinel initialized
+2026-02-18 21:16:13,818 - __main__ - INFO - Starting Aegis Sentinel service
+2026-02-18 21:16:13,818 - monitor - INFO - System monitoring started
+2026-02-18 21:16:13,818 - __main__ - INFO - Aegis Sentinel service started successfully
+2026-02-18 21:16:13,818 - __main__ - INFO - Aegis Sentinel is running. Press Ctrl+C to stop.
+2026-02-18 21:16:14,830 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:16:14,830 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:16:14,830 - detector - INFO - Anomaly detection completed
+2026-02-18 21:16:25,846 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:16:25,846 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:16:25,846 - detector - INFO - Anomaly detection completed
+2026-02-18 21:16:36,862 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:16:36,862 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:16:36,862 - detector - INFO - Anomaly detection completed
+2026-02-18 21:16:47,870 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:16:47,871 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:16:47,871 - detector - INFO - Anomaly detection completed
+2026-02-18 21:16:58,886 - monitor - INFO - Internal health check
+2026-02-18 21:16:58,886 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:16:58,886 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:16:58,886 - detector - INFO - Anomaly detection completed
+2026-02-18 21:17:09,905 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:17:09,905 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:17:09,905 - detector - INFO - Anomaly detection completed
+2026-02-18 21:17:20,924 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:17:20,924 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:17:20,924 - detector - INFO - Anomaly detection completed
+2026-02-18 21:17:31,939 - detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:17:31,939 - detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:17:31,939 - detector - INFO - Anomaly detection completed
+2026-02-18 21:23:18,494 - src.monitor - INFO - SystemMonitor initialized
+2026-02-18 21:23:18,494 - src.detector - INFO - IsolationForestDetector initialized
+2026-02-18 21:23:18,494 - src.detector - INFO - StatisticalDetector initialized
+2026-02-18 21:23:18,494 - src.detector - INFO - AnomalyDetectorService initialized
+2026-02-18 21:23:18,495 - src.healer - WARNING - Docker client initialization failed - entering monitor-only mode
+Traceback (most recent call last):
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 223, in _retrieve_server_version
+    return self.version(api_version=False)["ApiVersion"]
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\daemon.py", line 181, in version
+    return self._result(self._get(url), json=True)
+                        ~~~~~~~~~^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\utils\decorators.py", line 44, in inner
+    return f(self, *args, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 246, in _get
+    return self.get(url, **self._set_request_timeout(kwargs))
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 602, in get
+    return self.request("GET", url, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+    ~~~~~~~~~~~~^
+        method,
+        ^^^^^^^
+    ...<6 lines>...
+        enforce_content_length=enforce_content_length,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connection.py", line 494, in request
+    self.endheaders()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Python314\Lib\http\client.py", line 1333, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\http\client.py", line 1093, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "C:\Python314\Lib\http\client.py", line 1037, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipeconn.py", line 25, in connect
+    sock.connect(self.npipe_path)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 25, in wrapped
+    return f(self, *args, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 76, in connect
+    raise e
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 54, in connect
+    handle = win32file.CreateFile(
+        address,
+    ...<7 lines>...
+        0
+    )
+pywintypes.error: (2, 'CreateFile', 'The system cannot find the file specified.')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "d:\Projects\aegis-sentinel\src\healer.py", line 101, in __init__
+    self._docker_client = docker.from_env()
+                          ~~~~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\client.py", line 94, in from_env
+    return cls(
+        timeout=timeout,
+    ...<3 lines>...
+        **kwargs_from_env(**kwargs)
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\client.py", line 45, in __init__
+    self.api = APIClient(*args, **kwargs)
+               ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 207, in __init__
+    self._version = self._retrieve_server_version()
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 230, in _retrieve_server_version
+    raise DockerException(
+        f'Error while fetching server API version: {e}'
+    ) from e
+docker.errors.DockerException: Error while fetching server API version: (2, 'CreateFile', 'The system cannot find the file specified.')
+2026-02-18 21:23:18,501 - src.healer - INFO - Cache recovery handler initialized
+2026-02-18 21:23:18,501 - src.healer - INFO - Service recovery handler initialized
+2026-02-18 21:23:18,501 - src.healer - INFO - Recovery engine initialized
+2026-02-18 21:23:18,501 - main - INFO - Aegis Sentinel initialized
+2026-02-18 21:23:18,502 - main - INFO - Starting Aegis Sentinel service
+2026-02-18 21:23:18,502 - src.monitor - INFO - System monitoring started
+2026-02-18 21:23:18,502 - main - INFO - Aegis Sentinel service started successfully
+2026-02-18 21:23:18,502 - main - INFO - Aegis Sentinel is running. Press Ctrl+C to stop.
+2026-02-18 21:23:19,514 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:23:19,514 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:23:19,514 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:23:30,531 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:23:30,531 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:23:30,531 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:23:41,544 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:23:41,544 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:23:41,544 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:23:52,562 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:23:52,562 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:23:52,562 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:24:03,578 - src.monitor - INFO - Internal health check
+2026-02-18 21:24:03,578 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:24:03,579 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:24:03,579 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:24:14,599 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:24:14,600 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:24:14,600 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:24:25,620 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:24:25,620 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:24:25,620 - src.detector - INFO - Anomaly detection completed

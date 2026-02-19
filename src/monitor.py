@@ -75,6 +75,7 @@ class SystemMonitor:
         self._api_metrics_buffer: deque[APIMetrics] = deque(maxlen=1000)
         self._network_counters: Dict[str, int] = {}
         self._network_lock = asyncio.Lock()  # Thread-safe protection for network counters
+        self._buffer_lock = asyncio.Lock()  # Atomic buffer synchronization
         self._running = False
         self._monitor_task: Optional[asyncio.Task] = None
         self._health_check_counter = 0
@@ -117,14 +118,16 @@ class SystemMonitor:
         """Main monitoring loop that collects metrics at regular intervals."""
         while self._running:
             try:
-                # Collect system metrics
+                # Collect system metrics with atomic buffer synchronization
                 system_metrics = await self._collect_system_metrics()
-                self._metrics_buffer.append(system_metrics)
+                async with self._buffer_lock:
+                    self._metrics_buffer.append(system_metrics)
                 
-                # Collect API metrics if endpoints are configured
+                # Collect API metrics if endpoints are configured with atomic buffer synchronization
                 if self.config.api_endpoints:
                     api_metrics = await self._collect_api_metrics()
-                    self._api_metrics_buffer.extend(api_metrics)
+                    async with self._buffer_lock:
+                        self._api_metrics_buffer.extend(api_metrics)
                 
                 # Keep buffer size manageable with TTL (30 minutes)
                 self._cleanup_old_metrics()
@@ -241,7 +244,8 @@ class SystemMonitor:
                 start_time = time.time()
                 
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(endpoint, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                    response = await session.get(endpoint, timeout=aiohttp.ClientTimeout(total=10))
+                    async with response:
                         response_time = (time.time() - start_time) * 1000  # Convert to milliseconds
                         
                         api_metric = APIMetrics(
@@ -300,18 +304,16 @@ class SystemMonitor:
         return metrics
     
     def _cleanup_old_metrics(self) -> None:
-        """Clean up old metrics from buffers based on TTL (30 minutes)."""
+        """Clean up old metrics from buffers based on TTL (30 minutes) using efficient deque operations."""
         cutoff_time = datetime.now() - timedelta(minutes=30)
         
-        # Clean up system metrics buffer - convert to list, filter, then back to deque
-        filtered_metrics = [metric for metric in self._metrics_buffer if metric.timestamp >= cutoff_time]
-        self._metrics_buffer.clear()
-        self._metrics_buffer.extend(filtered_metrics)
+        # TRUE DEQUE MEMORY MANAGEMENT: Use popleft() to maintain O(1) complexity
+        while self._metrics_buffer and self._metrics_buffer[0].timestamp < cutoff_time:
+            self._metrics_buffer.popleft()
         
-        # Clean up API metrics buffer - convert to list, filter, then back to deque
-        filtered_api_metrics = [metric for metric in self._api_metrics_buffer if metric.timestamp >= cutoff_time]
-        self._api_metrics_buffer.clear()
-        self._api_metrics_buffer.extend(filtered_api_metrics)
+        # TRUE DEQUE MEMORY MANAGEMENT: Use popleft() for API metrics as well
+        while self._api_metrics_buffer and self._api_metrics_buffer[0].timestamp < cutoff_time:
+            self._api_metrics_buffer.popleft()
     
     def get_latest_metrics(self, limit: int = 100) -> List[SystemMetrics]:
         """Get the latest system metrics from the buffer."""

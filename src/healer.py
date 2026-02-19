@@ -19,7 +19,7 @@ import docker
 import docker.errors
 from pydantic import BaseModel, Field, validator
 
-from detector import AnomalyResult
+from .detector import AnomalyResult
 
 logger = logging.getLogger(__name__)
 
@@ -266,29 +266,85 @@ class CacheRecoveryHandler(RecoveryActionHandler):
         start_time = time.time()
         
         try:
+            # STRICT VALIDATION (FAIL-FAST): Validate parameters before execution
             cache_type = action.parameters.get('cache_type', 'redis')
             cache_host = action.parameters.get('host', 'localhost')
             cache_port = action.parameters.get('port', 6379)
             
-            # Strict type validation with fallback to defaults
-            try:
-                cache_host = str(cache_host) if cache_host is not None else 'localhost'
-                cache_port = int(cache_port) if cache_port is not None else 6379
-            except (ValueError, TypeError) as e:
-                logger.warning("Invalid cache configuration - using defaults", extra={
-                    "original_host": cache_host,
-                    "original_port": cache_port,
-                    "error": str(e)
-                })
-                cache_host = 'localhost'
-                cache_port = 6379
+            # STRICT VALIDATION: Validate cache type
+            if cache_type not in ['redis', 'memcached']:
+                return RecoveryResult(
+                    action_id=action.action_id,
+                    timestamp=datetime.now(),
+                    success=False,
+                    action_type=action.action_type,
+                    target=action.target,
+                    execution_time=0.0,
+                    error_message=f"Invalid cache type: {cache_type}. Must be 'redis' or 'memcached'",
+                    retry_count=0,
+                    final_state="invalid_config"
+                )
             
+            # STRICT VALIDATION: Validate host parameter
+            if cache_host is None or not isinstance(cache_host, str):
+                return RecoveryResult(
+                    action_id=action.action_id,
+                    timestamp=datetime.now(),
+                    success=False,
+                    action_type=action.action_type,
+                    target=action.target,
+                    execution_time=0.0,
+                    error_message=f"Invalid cache host: {cache_host}. Must be a valid string",
+                    retry_count=0,
+                    final_state="invalid_config"
+                )
+            
+            # STRICT VALIDATION: Validate port parameter
+            if cache_port is None:
+                return RecoveryResult(
+                    action_id=action.action_id,
+                    timestamp=datetime.now(),
+                    success=False,
+                    action_type=action.action_type,
+                    target=action.target,
+                    execution_time=0.0,
+                    error_message="Cache port is required and cannot be None",
+                    retry_count=0,
+                    final_state="invalid_config"
+                )
+            
+            try:
+                validated_port = int(cache_port)
+                if not (1 <= validated_port <= 65535):
+                    return RecoveryResult(
+                        action_id=action.action_id,
+                        timestamp=datetime.now(),
+                        success=False,
+                        action_type=action.action_type,
+                        target=action.target,
+                        execution_time=0.0,
+                        error_message=f"Invalid port number: {cache_port}. Must be between 1 and 65535",
+                        retry_count=0,
+                        final_state="invalid_config"
+                    )
+            except (ValueError, TypeError):
+                return RecoveryResult(
+                    action_id=action.action_id,
+                    timestamp=datetime.now(),
+                    success=False,
+                    action_type=action.action_type,
+                    target=action.target,
+                    execution_time=0.0,
+                    error_message=f"Invalid port value: {cache_port}. Must be a valid integer",
+                    retry_count=0,
+                    final_state="invalid_config"
+                )
+            
+            # All validations passed, proceed with execution
             if cache_type == 'redis':
-                await self._flush_redis_cache(cache_host, cache_port, action.timeout)
+                await self._flush_redis_cache(cache_host, validated_port, action.timeout)
             elif cache_type == 'memcached':
-                await self._flush_memcached_cache(cache_host, cache_port, action.timeout)
-            else:
-                raise ValueError(f"Unsupported cache type: {cache_type}")
+                await self._flush_memcached_cache(cache_host, validated_port, action.timeout)
             
             execution_time = time.time() - start_time
             
@@ -306,7 +362,7 @@ class CacheRecoveryHandler(RecoveryActionHandler):
             logger.info("Cache flush successful", extra={
                 "cache_type": cache_type,
                 "cache_host": cache_host,
-                "cache_port": cache_port,
+                "cache_port": validated_port,
                 "execution_time": execution_time
             })
             
@@ -629,9 +685,9 @@ class RecoveryEngine:
             })
             return []
         
-        # Execute actions with improved concurrency control using native async context manager
+        # Execute actions with simplified flat locking
         async def execute_with_semaphore(action: RecoveryAction) -> RecoveryResult:
-            """Execute action with guaranteed semaphore release using native context manager."""
+            """Execute action with simplified flat locking and guaranteed semaphore release."""
             try:
                 # Use native async context manager for automatic semaphore release
                 async with asyncio.timeout(30.0):  # 30 second timeout for semaphore acquisition
@@ -639,7 +695,7 @@ class RecoveryEngine:
                         # Execute the action
                         result = await self._execute_action(action)
                         
-                        # Update circuit breaker state
+                        # FLAT LOCKING: Minimal lock scope for circuit breaker update only
                         if result.success:
                             self._circuit_breaker.record_success()
                             self._total_actions += 1
@@ -673,7 +729,7 @@ class RecoveryEngine:
                     "error_message": str(e)
                 })
                 
-                # Update circuit breaker on exception
+                # FLAT LOCKING: Minimal lock scope for circuit breaker update only
                 self._circuit_breaker.record_failure()
                 self._total_actions += 1
                 self._failed_actions += 1

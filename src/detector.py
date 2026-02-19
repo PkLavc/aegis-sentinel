@@ -16,7 +16,7 @@ import numpy as np
 from pydantic import BaseModel, Field, validator
 from sklearn.ensemble import IsolationForest
 
-from monitor import APIMetrics, SystemMetrics
+from .monitor import APIMetrics, SystemMetrics
 
 logger = logging.getLogger(__name__)
 
@@ -98,13 +98,28 @@ class IsolationForestDetector(AnomalyDetector):
                 latest_metrics.disk_usage_percent
             ]])
             
-            # Predict anomaly
-            if self._model is not None:
-                anomaly_score = self._model.decision_function(features)[0]
-                is_anomaly = self._model.predict(features)[0] == -1
-            else:
-                anomaly_score = 0.0
-                is_anomaly = False
+            # Predict anomaly - ML Safety: Explicit model state validation
+            if self._model is None:
+                logger.warning("Model not initialized - returning safe default", extra={
+                    "metric_type": "system_isolation_forest",
+                    "action": "return_safe_default"
+                })
+                return AnomalyResult(
+                    timestamp=datetime.now(),
+                    metric_type="system_isolation_forest",
+                    anomaly_detected=False,
+                    confidence_score=0.0,
+                    metric_values={
+                        "cpu_percent": latest_metrics.cpu_percent,
+                        "memory_percent": latest_metrics.memory_percent,
+                        "disk_usage_percent": latest_metrics.disk_usage_percent
+                    },
+                    anomaly_description="Model not initialized - safe default",
+                    severity_level="unknown"
+                )
+            
+            anomaly_score = self._model.decision_function(features)[0]
+            is_anomaly = self._model.predict(features)[0] == -1
             
             # Calculate confidence score (normalize anomaly score)
             confidence_score = abs(anomaly_score) / (abs(anomaly_score) + 1.0)

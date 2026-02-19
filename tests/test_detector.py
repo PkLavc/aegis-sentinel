@@ -119,10 +119,10 @@ class TestIsolationForestDetector:
         detector = self.create_detector()
         sample_metrics = self.create_sample_metrics()
         
-        # Mock the trained model
+        # Mock the trained model with proper numpy arrays
         mock_model = MagicMock()
-        mock_model.decision_function.return_value = [0.5]
-        mock_model.predict.return_value = [1]  # Normal prediction
+        mock_model.decision_function.return_value = np.array([0.5])
+        mock_model.predict.return_value = np.array([1])  # Normal prediction
         detector._model = mock_model
         detector._trained = True
         
@@ -138,10 +138,10 @@ class TestIsolationForestDetector:
         detector = self.create_detector()
         sample_metrics = self.create_sample_metrics()
         
-        # Mock the trained model to detect an anomaly
+        # Mock the trained model to detect an anomaly with proper numpy arrays
         mock_model = MagicMock()
-        mock_model.decision_function.return_value = [-1.5]  # Anomalous prediction
-        mock_model.predict.return_value = [-1]  # Anomaly detected
+        mock_model.decision_function.return_value = np.array([-1.5])  # Anomalous prediction
+        mock_model.predict.return_value = np.array([-1])  # Anomaly detected
         detector._model = mock_model
         detector._trained = True
         
