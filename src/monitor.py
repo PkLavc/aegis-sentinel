@@ -9,6 +9,7 @@ and structured logging for enterprise auditability.
 import asyncio
 import logging
 import time
+from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Union
@@ -69,17 +70,21 @@ class SystemMonitor:
     def __init__(self, config: Optional[MonitoringConfig] = None) -> None:
         """Initialize the system monitor with configuration."""
         self.config = config or MonitoringConfig()
-        self._metrics_buffer: List[SystemMetrics] = []
-        self._api_metrics_buffer: List[APIMetrics] = []
+        # Use deque with max length for automatic memory management
+        self._metrics_buffer: deque[SystemMetrics] = deque(maxlen=1000)
+        self._api_metrics_buffer: deque[APIMetrics] = deque(maxlen=1000)
         self._network_counters: Dict[str, int] = {}
+        self._network_lock = asyncio.Lock()  # Thread-safe protection for network counters
         self._running = False
         self._monitor_task: Optional[asyncio.Task] = None
+        self._health_check_counter = 0
         
         logger.info("SystemMonitor initialized", extra={
             "collection_interval": self.config.collection_interval,
             "api_endpoints_count": len(self.config.api_endpoints),
             "network_monitoring": self.config.enable_network_monitoring,
-            "disk_monitoring": self.config.enable_disk_monitoring
+            "disk_monitoring": self.config.enable_disk_monitoring,
+            "buffer_max_size": 1000
         })
     
     async def start_monitoring(self) -> None:
@@ -124,6 +129,11 @@ class SystemMonitor:
                 # Keep buffer size manageable with TTL (30 minutes)
                 self._cleanup_old_metrics()
                 
+                # Health check every 5 cycles
+                self._health_check_counter += 1
+                if self._health_check_counter % 5 == 0:
+                    await self._perform_health_check()
+                
                 await asyncio.sleep(self.config.collection_interval)
                 
             except Exception as e:
@@ -132,6 +142,30 @@ class SystemMonitor:
                     "error_message": str(e)
                 })
                 await asyncio.sleep(self.config.collection_interval)
+    
+    async def _perform_health_check(self) -> None:
+        """Perform internal health check and report system status."""
+        try:
+            # Check buffer sizes
+            metrics_buffer_size = len(self._metrics_buffer)
+            api_buffer_size = len(self._api_metrics_buffer)
+            
+            # Check network lock status (if available)
+            network_lock_status = "locked" if self._network_lock.locked() else "unlocked"
+            
+            logger.info("Internal health check", extra={
+                "metrics_buffer_size": metrics_buffer_size,
+                "api_buffer_size": api_buffer_size,
+                "network_lock_status": network_lock_status,
+                "max_buffer_capacity": 1000,
+                "health_check_cycle": self._health_check_counter
+            })
+            
+        except Exception as e:
+            logger.error("Health check failed", exc_info=True, extra={
+                "error_type": type(e).__name__,
+                "error_message": str(e)
+            })
     
     async def _collect_system_metrics(self) -> SystemMetrics:
         """Collect current system performance metrics."""
@@ -159,15 +193,16 @@ class SystemMonitor:
                 network_sent = network.bytes_sent
                 network_recv = network.bytes_recv
             
-            # Calculate network differences if we have previous values
-            if self._network_counters:
-                network_sent_diff = network_sent - self._network_counters.get('sent', 0)
-                network_recv_diff = network_recv - self._network_counters.get('recv', 0)
-            else:
-                network_sent_diff = 0
-                network_recv_diff = 0
-            
-            self._network_counters = {'sent': network_sent, 'recv': network_recv}
+            # Calculate network differences with thread-safe protection
+            async with self._network_lock:
+                if self._network_counters:
+                    network_sent_diff = network_sent - self._network_counters.get('sent', 0)
+                    network_recv_diff = network_recv - self._network_counters.get('recv', 0)
+                else:
+                    network_sent_diff = 0
+                    network_recv_diff = 0
+                
+                self._network_counters = {'sent': network_sent, 'recv': network_recv}
             
             metrics = SystemMetrics(
                 timestamp=datetime.now(),
@@ -265,35 +300,26 @@ class SystemMonitor:
         return metrics
     
     def _cleanup_old_metrics(self) -> None:
-        """Clean up old metrics from buffers based on TTL (30 minutes) and size limits."""
+        """Clean up old metrics from buffers based on TTL (30 minutes)."""
         cutoff_time = datetime.now() - timedelta(minutes=30)
         
-        # Clean up system metrics buffer
-        self._metrics_buffer = [
-            metric for metric in self._metrics_buffer 
-            if metric.timestamp >= cutoff_time
-        ]
+        # Clean up system metrics buffer - convert to list, filter, then back to deque
+        filtered_metrics = [metric for metric in self._metrics_buffer if metric.timestamp >= cutoff_time]
+        self._metrics_buffer.clear()
+        self._metrics_buffer.extend(filtered_metrics)
         
-        # Clean up API metrics buffer
-        self._api_metrics_buffer = [
-            metric for metric in self._api_metrics_buffer 
-            if metric.timestamp >= cutoff_time
-        ]
-        
-        # Apply size limits as fallback
-        if len(self._metrics_buffer) > 1000:
-            self._metrics_buffer = self._metrics_buffer[-500:]
-        
-        if len(self._api_metrics_buffer) > 1000:
-            self._api_metrics_buffer = self._api_metrics_buffer[-500:]
+        # Clean up API metrics buffer - convert to list, filter, then back to deque
+        filtered_api_metrics = [metric for metric in self._api_metrics_buffer if metric.timestamp >= cutoff_time]
+        self._api_metrics_buffer.clear()
+        self._api_metrics_buffer.extend(filtered_api_metrics)
     
     def get_latest_metrics(self, limit: int = 100) -> List[SystemMetrics]:
         """Get the latest system metrics from the buffer."""
-        return self._metrics_buffer[-limit:] if self._metrics_buffer else []
+        return list(self._metrics_buffer)[-limit:] if self._metrics_buffer else []
     
     def get_latest_api_metrics(self, limit: int = 100) -> List[APIMetrics]:
         """Get the latest API metrics from the buffer."""
-        return self._api_metrics_buffer[-limit:] if self._api_metrics_buffer else []
+        return list(self._api_metrics_buffer)[-limit:] if self._api_metrics_buffer else []
     
     def get_metrics_summary(self) -> Dict[str, Union[float, int, str]]:
         """Get a summary of current system state."""

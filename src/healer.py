@@ -12,14 +12,14 @@ import subprocess
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Union
 
 import docker
 import docker.errors
 from pydantic import BaseModel, Field, validator
 
-from .detector import AnomalyResult
+from detector import AnomalyResult
 
 logger = logging.getLogger(__name__)
 
@@ -95,15 +95,17 @@ class DockerRecoveryHandler(RecoveryActionHandler):
         """Initialize the Docker recovery handler."""
         self.config = config
         self._docker_client = None
+        self._monitor_only_mode = False
         
         try:
             self._docker_client = docker.from_env()
             logger.info("Docker recovery handler initialized")
         except docker.errors.DockerException as e:
-            logger.error("Failed to initialize Docker client", exc_info=True, extra={
+            logger.warning("Docker client initialization failed - entering monitor-only mode", exc_info=True, extra={
                 "error_type": type(e).__name__,
                 "error_message": str(e)
             })
+            self._monitor_only_mode = True
             # Don't raise exception - allow system to continue without Docker recovery
             self._docker_client = None
     
@@ -127,9 +129,9 @@ class DockerRecoveryHandler(RecoveryActionHandler):
             )
         
         start_time = time.time()
-        retry_count = 0
         
-        while retry_count <= action.max_retries:
+        # Use for loop to ensure finite retry attempts regardless of exception location
+        for retry_attempt in range(action.max_retries + 1):
             try:
                 # Get container
                 container = self._docker_client.containers.get(action.target)
@@ -149,14 +151,14 @@ class DockerRecoveryHandler(RecoveryActionHandler):
                     action_type=action.action_type,
                     target=action.target,
                     execution_time=execution_time,
-                    retry_count=retry_count,
+                    retry_count=retry_attempt,
                     final_state="healthy"
                 )
                 
                 logger.info("Docker container recovery successful", extra={
                     "container": action.target,
                     "execution_time": execution_time,
-                    "retry_count": retry_count
+                    "retry_count": retry_attempt
                 })
                 
                 return result
@@ -178,20 +180,19 @@ class DockerRecoveryHandler(RecoveryActionHandler):
                     target=action.target,
                     execution_time=execution_time,
                     error_message=error_msg,
-                    retry_count=retry_count,
+                    retry_count=retry_attempt,
                     final_state="not_found"
                 )
                 
             except Exception as e:
-                retry_count += 1
                 execution_time = time.time() - start_time
                 
-                if retry_count > action.max_retries:
+                if retry_attempt >= action.max_retries:
                     error_msg = f"Failed after {action.max_retries} retries: {str(e)}"
                     
                     logger.error("Docker container recovery failed after retries", exc_info=True, extra={
                         "container": action.target,
-                        "retry_count": retry_count - 1,
+                        "retry_count": retry_attempt,
                         "error_message": str(e)
                     })
                     
@@ -203,13 +204,13 @@ class DockerRecoveryHandler(RecoveryActionHandler):
                         target=action.target,
                         execution_time=execution_time,
                         error_message=error_msg,
-                        retry_count=retry_count - 1,
+                        retry_count=retry_attempt,
                         final_state="failed"
                     )
                 
                 logger.warning("Docker container recovery retry", extra={
                     "container": action.target,
-                    "retry_count": retry_count,
+                    "retry_count": retry_attempt + 1,
                     "error_message": str(e)
                 })
                 
@@ -224,7 +225,7 @@ class DockerRecoveryHandler(RecoveryActionHandler):
             target=action.target,
             execution_time=time.time() - start_time,
             error_message="Unexpected end of execution",
-            retry_count=retry_count,
+            retry_count=action.max_retries,
             final_state="failed"
         )
     
@@ -269,9 +270,18 @@ class CacheRecoveryHandler(RecoveryActionHandler):
             cache_host = action.parameters.get('host', 'localhost')
             cache_port = action.parameters.get('port', 6379)
             
-            # Ensure types are correct
-            cache_host = str(cache_host) if cache_host is not None else 'localhost'
-            cache_port = int(cache_port) if cache_port is not None else 6379
+            # Strict type validation with fallback to defaults
+            try:
+                cache_host = str(cache_host) if cache_host is not None else 'localhost'
+                cache_port = int(cache_port) if cache_port is not None else 6379
+            except (ValueError, TypeError) as e:
+                logger.warning("Invalid cache configuration - using defaults", extra={
+                    "original_host": cache_host,
+                    "original_port": cache_port,
+                    "error": str(e)
+                })
+                cache_host = 'localhost'
+                cache_port = 6379
             
             if cache_type == 'redis':
                 await self._flush_redis_cache(cache_host, cache_port, action.timeout)
@@ -508,6 +518,53 @@ class ServiceRecoveryHandler(RecoveryActionHandler):
         raise TimeoutError(f"Service {service_name} did not become active within {timeout} seconds")
 
 
+class CircuitBreaker:
+    """Circuit breaker implementation for recovery actions."""
+    
+    def __init__(self, failure_threshold: int = 3, recovery_timeout: float = 300.0):
+        """Initialize the circuit breaker."""
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
+    
+    def can_execute(self) -> bool:
+        """Check if actions can be executed based on circuit state."""
+        if self.state == "CLOSED":
+            return True
+        elif self.state == "OPEN":
+            if self.last_failure_time and (datetime.now() - self.last_failure_time).total_seconds() > self.recovery_timeout:
+                self.state = "HALF_OPEN"
+                return True
+            return False
+        elif self.state == "HALF_OPEN":
+            return True
+        return False
+    
+    def record_success(self) -> None:
+        """Record a successful execution."""
+        self.failure_count = 0
+        self.state = "CLOSED"
+    
+    def record_failure(self) -> None:
+        """Record a failed execution."""
+        self.failure_count += 1
+        self.last_failure_time = datetime.now()
+        
+        if self.failure_count >= self.failure_threshold:
+            self.state = "OPEN"
+            logger.warning("Circuit breaker opened", extra={
+                "failure_count": self.failure_count,
+                "failure_threshold": self.failure_threshold,
+                "recovery_timeout": self.recovery_timeout
+            })
+    
+    def get_state(self) -> str:
+        """Get current circuit breaker state."""
+        return self.state
+
+
 class RecoveryEngine:
     """Main recovery engine that orchestrates automated healing actions."""
     
@@ -516,6 +573,10 @@ class RecoveryEngine:
         self.config = config or RecoveryConfig()
         self._handlers: List[RecoveryActionHandler] = []
         self._active_actions: Dict[str, asyncio.Task] = {}
+        self._circuit_breaker = CircuitBreaker(failure_threshold=3, recovery_timeout=300.0)
+        self._semaphore = asyncio.Semaphore(self.config.max_concurrent_actions)
+        self._total_actions = 0
+        self._failed_actions = 0
         
         # Initialize handlers based on configuration
         if self.config.enable_docker_recovery:
@@ -529,8 +590,16 @@ class RecoveryEngine:
         
         logger.info("Recovery engine initialized", extra={
             "handlers_count": len(self._handlers),
-            "max_concurrent_actions": self.config.max_concurrent_actions
+            "max_concurrent_actions": self.config.max_concurrent_actions,
+            "monitor_only_mode": self._is_monitor_only_mode(),
+            "circuit_breaker_threshold": 3,
+            "circuit_breaker_timeout": 300.0
         })
+    
+    def _is_monitor_only_mode(self) -> bool:
+        """Check if the system is in monitor-only mode (Docker unavailable)."""
+        docker_handler = next((h for h in self._handlers if isinstance(h, DockerRecoveryHandler)), None)
+        return docker_handler is not None and docker_handler._monitor_only_mode
     
     async def trigger_recovery(self, anomaly: AnomalyResult) -> List[RecoveryResult]:
         """Trigger recovery actions based on detected anomaly."""
@@ -551,17 +620,77 @@ class RecoveryEngine:
             })
             return results
         
-        # Execute actions with concurrency control
-        semaphore = asyncio.Semaphore(self.config.max_concurrent_actions)
+        # Check circuit breaker before executing actions
+        if not self._circuit_breaker.can_execute():
+            logger.warning("Circuit breaker is open - skipping recovery actions", extra={
+                "circuit_state": self._circuit_breaker.get_state(),
+                "failure_count": self._circuit_breaker.failure_count,
+                "anomaly_type": anomaly.metric_type
+            })
+            return []
         
+        # Execute actions with improved concurrency control using native async context manager
         async def execute_with_semaphore(action: RecoveryAction) -> RecoveryResult:
-            async with semaphore:
-                try:
-                    return await self._execute_action(action)
-                except Exception as e:
-                    # Ensure semaphore is released even if action fails
-                    raise e
+            """Execute action with guaranteed semaphore release using native context manager."""
+            try:
+                # Use native async context manager for automatic semaphore release
+                async with asyncio.timeout(30.0):  # 30 second timeout for semaphore acquisition
+                    async with self._semaphore:
+                        # Execute the action
+                        result = await self._execute_action(action)
+                        
+                        # Update circuit breaker state
+                        if result.success:
+                            self._circuit_breaker.record_success()
+                            self._total_actions += 1
+                        else:
+                            self._circuit_breaker.record_failure()
+                            self._total_actions += 1
+                            self._failed_actions += 1
+                        
+                        return result
+                
+            except asyncio.TimeoutError:
+                logger.error("Semaphore acquisition timed out", extra={
+                    "action_id": action.action_id,
+                    "max_concurrent_actions": self.config.max_concurrent_actions
+                })
+                return RecoveryResult(
+                    action_id=action.action_id,
+                    timestamp=datetime.now(),
+                    success=False,
+                    action_type=action.action_type,
+                    target=action.target,
+                    execution_time=0.0,
+                    error_message="Semaphore acquisition timeout",
+                    retry_count=0,
+                    final_state="timeout"
+                )
+            except Exception as e:
+                logger.error("Recovery action failed", exc_info=True, extra={
+                    "action_id": action.action_id,
+                    "error_type": type(e).__name__,
+                    "error_message": str(e)
+                })
+                
+                # Update circuit breaker on exception
+                self._circuit_breaker.record_failure()
+                self._total_actions += 1
+                self._failed_actions += 1
+                
+                return RecoveryResult(
+                    action_id=action.action_id,
+                    timestamp=datetime.now(),
+                    success=False,
+                    action_type=action.action_type,
+                    target=action.target,
+                    execution_time=0.0,
+                    error_message=str(e),
+                    retry_count=0,
+                    final_state="failed"
+                )
         
+        # Execute all actions concurrently
         tasks = [execute_with_semaphore(action) for action in actions]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
@@ -589,10 +718,15 @@ class RecoveryEngine:
             else:
                 final_results.append(result)
         
+        # Log circuit breaker status
         logger.info("Recovery actions completed", extra={
             "anomaly_type": anomaly.metric_type,
             "actions_count": len(actions),
-            "successful_actions": sum(1 for r in final_results if r.success)
+            "successful_actions": sum(1 for r in final_results if r.success),
+            "circuit_state": self._circuit_breaker.get_state(),
+            "failure_count": self._circuit_breaker.failure_count,
+            "total_actions": self._total_actions,
+            "failed_actions": self._failed_actions
         })
         
         return final_results

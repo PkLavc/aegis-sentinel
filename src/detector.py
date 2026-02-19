@@ -16,7 +16,7 @@ import numpy as np
 from pydantic import BaseModel, Field, validator
 from sklearn.ensemble import IsolationForest
 
-from .monitor import APIMetrics, SystemMetrics
+from monitor import APIMetrics, SystemMetrics
 
 logger = logging.getLogger(__name__)
 
