@@ -627,17 +627,33 @@ class CircuitBreaker:
         self.failure_count = 0
         self.last_failure_time = None
         self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
+        self._half_open_attempts = 0
+        self._max_half_open_attempts = 1  # Allow only 1 attempt in half-open state
     
     def can_execute(self) -> bool:
         """Check if actions can be executed based on circuit state."""
         if self.state == "CLOSED":
             return True
         elif self.state == "OPEN":
+            # CIRCUIT BREAKER RECOVERY: Check if recovery timeout has passed
             if self.last_failure_time and (datetime.now() - self.last_failure_time).total_seconds() > self.recovery_timeout:
                 self.state = "HALF_OPEN"
+                self._half_open_attempts = 0
+                logger.info("Circuit breaker transitioning to HALF_OPEN state", extra={
+                    "recovery_timeout": self.recovery_timeout,
+                    "time_since_failure": (datetime.now() - self.last_failure_time).total_seconds()
+                })
                 return True
             return False
         elif self.state == "HALF_OPEN":
+            # CIRCUIT BREAKER RECOVERY: Limit attempts in half-open state
+            if self._half_open_attempts >= self._max_half_open_attempts:
+                self.state = "OPEN"
+                logger.warning("Circuit breaker returning to OPEN state after failed recovery attempt", extra={
+                    "half_open_attempts": self._half_open_attempts,
+                    "max_attempts": self._max_half_open_attempts
+                })
+                return False
             return True
         return False
     
@@ -645,23 +661,46 @@ class CircuitBreaker:
         """Record a successful execution."""
         self.failure_count = 0
         self.state = "CLOSED"
+        self._half_open_attempts = 0
+        logger.info("Circuit breaker reset to CLOSED state after successful recovery")
     
     def record_failure(self) -> None:
         """Record a failed execution."""
         self.failure_count += 1
         self.last_failure_time = datetime.now()
         
+        if self.state == "HALF_OPEN":
+            self._half_open_attempts += 1
+        
         if self.failure_count >= self.failure_threshold:
             self.state = "OPEN"
             logger.warning("Circuit breaker opened", extra={
                 "failure_count": self.failure_count,
                 "failure_threshold": self.failure_threshold,
-                "recovery_timeout": self.recovery_timeout
+                "recovery_timeout": self.recovery_timeout,
+                "circuit_state": self.state
             })
     
     def get_state(self) -> str:
         """Get current circuit breaker state."""
         return self.state
+    
+    def get_recovery_status(self) -> Dict[str, Union[str, int, float, bool]]:
+        """Get detailed recovery status for monitoring."""
+        time_since_failure = 0
+        if self.last_failure_time:
+            time_since_failure = (datetime.now() - self.last_failure_time).total_seconds()
+        
+        return {
+            "state": self.state,
+            "failure_count": self.failure_count,
+            "failure_threshold": self.failure_threshold,
+            "time_since_last_failure": time_since_failure,
+            "recovery_timeout": self.recovery_timeout,
+            "half_open_attempts": self._half_open_attempts,
+            "can_execute": self.can_execute(),
+            "time_to_recovery": max(0, self.recovery_timeout - time_since_failure) if self.state == "OPEN" else 0
+        }
 
 
 class RecoveryEngine:

@@ -123,32 +123,22 @@ class IsolationForestDetector(AnomalyDetector):
                     "warmup_samples_required": self.config.ml_warmup_samples
                 })
             
-            # ML WARM-UP DATA: Retain last valid model state instead of constant alerts
-            if hasattr(self, '_last_valid_model_state') and self._last_valid_model_state:
-                logger.debug("Using last valid ML model state to prevent system blindness", extra={
-                    "last_valid_state": self._last_valid_model_state
-                })
-                # Return a safe fallback result using last known good state
-                return AnomalyResult(
-                    timestamp=datetime.now(),
-                    metric_type="system_isolation_forest_fallback",
-                    anomaly_detected=False,
-                    confidence_score=0.0,
-                    metric_values={},
-                    anomaly_description="Using last valid ML model state - no system blindness",
-                    severity_level="unknown"
-                )
-            else:
-                # DELEGATE TO STATISTICAL FALLBACK: Ensure monitoring continues
-                return AnomalyResult(
-                    timestamp=datetime.now(),
-                    metric_type="system_isolation_forest_fallback",
-                    anomaly_detected=False,
-                    confidence_score=0.0,
-                    metric_values={},
-                    anomaly_description="ML model unavailable - delegated to statistical detection",
-                    severity_level="unknown"
-                )
+            # GRACEFUL FALLBACK: Always delegate to statistical detection when ML fails
+            # This ensures no "engasgos" (hiccups) in detection coverage
+            logger.info("Gracefully falling back to statistical detection", extra={
+                "fallback_reason": "ML model unavailable",
+                "statistical_detection_active": True
+            })
+            
+            return AnomalyResult(
+                timestamp=datetime.now(),
+                metric_type="system_isolation_forest_fallback",
+                anomaly_detected=False,
+                confidence_score=0.0,
+                metric_values={},
+                anomaly_description="ML model unavailable - gracefully delegated to statistical detection",
+                severity_level="unknown"
+            )
         
         try:
             # Extract features from latest metrics

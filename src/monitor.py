@@ -74,7 +74,7 @@ class SystemMonitor:
     def __init__(self, config: Optional[MonitoringConfig] = None) -> None:
         """Initialize the system monitor with configuration."""
         self.config = config or MonitoringConfig()
-        # Use deque with max length for automatic memory management
+        # MEMORY HARDENING: Use deque with max length for automatic memory management
         self._metrics_buffer: deque[SystemMetrics] = deque(maxlen=5000)
         self._api_metrics_buffer: deque[APIMetrics] = deque(maxlen=5000)
         self._network_counters: Dict[str, int] = {}
@@ -233,13 +233,14 @@ class SystemMonitor:
                 network_sent = network.bytes_sent
                 network_recv = network.bytes_recv
                 
-                # THREAD-SAFE COUNTERS: Complete atomic transaction within lock
+                # ATOMIC INTEGRITY: Complete atomic transaction within lock
                 async with self._network_lock:
                     try:
-                        # ATOMIC OPERATION: Read old counters and calculate differential in single transaction
+                        # ATOMIC OPERATION: Read old counters, calculate differential, and write new counters in single transaction
                         if self._network_counters:
                             old_sent = self._network_counters['sent']
                             old_recv = self._network_counters['recv']
+                            # CRITICAL: Calculate differential BEFORE updating counters
                             network_sent_diff = network_sent - old_sent
                             network_recv_diff = network_recv - old_recv
                         else:
