@@ -98,8 +98,30 @@ class DockerRecoveryHandler(RecoveryActionHandler):
         self._monitor_only_mode = False
         
         try:
-            self._docker_client = docker.from_env()
-            logger.info("Docker recovery handler initialized")
+            # DOCKER WINDOWS COMPATIBILITY: Try different connection methods
+            import platform
+            if platform.system() == 'Windows':
+                # On Windows, try TCP connection if named pipe fails
+                try:
+                    self._docker_client = docker.from_env()
+                    logger.info("Docker recovery handler initialized via named pipe")
+                except docker.errors.DockerException:
+                    try:
+                        # Try TCP connection on Windows
+                        self._docker_client = docker.DockerClient(base_url='tcp://localhost:2375')
+                        logger.info("Docker recovery handler initialized via TCP")
+                    except docker.errors.DockerException as tcp_error:
+                        logger.warning("Docker TCP connection failed, entering monitor-only mode", extra={
+                            "error_type": type(tcp_error).__name__,
+                            "error_message": str(tcp_error)
+                        })
+                        self._monitor_only_mode = True
+                        self._docker_client = None
+            else:
+                # On Linux/macOS, use standard connection
+                self._docker_client = docker.from_env()
+                logger.info("Docker recovery handler initialized")
+                
         except docker.errors.DockerException as e:
             logger.warning("Docker client initialization failed - entering monitor-only mode", exc_info=True, extra={
                 "error_type": type(e).__name__,
@@ -391,12 +413,18 @@ class CacheRecoveryHandler(RecoveryActionHandler):
     
     async def _flush_redis_cache(self, host: str, port: int, timeout: float) -> None:
         """Flush Redis cache."""
-        import aioredis
-        
         try:
-            redis = await aioredis.from_url(f"redis://{host}:{port}", encoding="utf-8", decode_responses=True)
-            await redis.flushall()
-            await redis.close()
+            # DISTUTILS/REDIS FIX: Use system command to avoid distutils dependency
+            cmd = f"redis-cli -h {host} -p {port} flushall"
+            process = await asyncio.create_subprocess_shell(
+                cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+            
+            if process.returncode != 0:
+                raise RuntimeError(f"Redis flush command failed: {stderr.decode()}")
         except Exception as e:
             raise RuntimeError(f"Failed to flush Redis cache: {str(e)}")
     

@@ -222,8 +222,7 @@ class SystemMonitor:
                 network_sent = network.bytes_sent
                 network_recv = network.bytes_recv
                 
-                # Calculate network differences with ATOMIC thread-safe protection
-                # CRITICAL FIX: Ensure network counter updates are atomic operations
+                # RACE CONDITION FIX: Use asyncio.Lock for network counter protection
                 async with self._network_lock:
                     try:
                         # ATOMIC OPERATION: Calculate differential and update state in single lock
