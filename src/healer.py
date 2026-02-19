@@ -728,22 +728,19 @@ class RecoveryEngine:
             })
             return []
         
-        # Execute actions with improved concurrency alignment
-        async def execute_with_semaphore(action: RecoveryAction) -> RecoveryResult:
-            """Execute action with aligned timeouts and guaranteed semaphore release."""
+        # TIMEOUT COORDINATION: Single timeout wrapper for entire operation
+        async def execute_with_timeout(action: RecoveryAction) -> RecoveryResult:
+            """Execute action with coordinated timeout and guaranteed cleanup."""
             semaphore_acquired = False
             try:
-                # TIMEOUT SYNCHRONIZATION: Semaphore timeout must be >= action timeout + buffer
-                semaphore_timeout = action.timeout + 10.0  # Ensure semaphore timeout > action timeout
-                
-                # Use native async context manager for automatic semaphore release
-                async with asyncio.timeout(semaphore_timeout):
+                # SINGLE TIMEOUT: Use one timeout for the entire operation
+                async with asyncio.timeout(action.timeout + 5.0):  # 5 second buffer
                     async with self._semaphore:
                         semaphore_acquired = True
                         # Execute the action
                         result = await self._execute_action(action)
                         
-                        # FLAT LOCKING: Minimal lock scope for circuit breaker update only
+                        # ATOMIC CIRCUIT BREAKER UPDATE: Minimal lock scope
                         if result.success:
                             self._circuit_breaker.record_success()
                             self._total_actions += 1
@@ -755,12 +752,12 @@ class RecoveryEngine:
                         return result
                 
             except asyncio.TimeoutError:
+                # TIMEOUT COORDINATION: Clear error message for timeout type
                 if not semaphore_acquired:
-                    logger.error("Semaphore acquisition timed out - RESOURCE SATURATION DETECTED", extra={
+                    logger.critical("Semaphore timeout - SYSTEM RESOURCE EXHAUSTION DETECTED", extra={
                         "action_id": action.action_id,
                         "max_concurrent_actions": self.config.max_concurrent_actions,
-                        "semaphore_timeout": semaphore_timeout,
-                        "action_timeout": action.timeout,
+                        "timeout_seconds": action.timeout + 5.0,
                         "circuit_state": self._circuit_breaker.get_state(),
                         "failure_count": self._circuit_breaker.failure_count
                     })
@@ -771,13 +768,12 @@ class RecoveryEngine:
                         action_type=action.action_type,
                         target=action.target,
                         execution_time=0.0,
-                        error_message=f"Semaphore acquisition timeout ({semaphore_timeout}s) - RESOURCE SATURATION",
+                        error_message=f"Resource exhaustion: semaphore timeout ({action.timeout + 5.0}s)",
                         retry_count=0,
-                        final_state="timeout"
+                        final_state="resource_exhaustion"
                     )
                 else:
-                    # Action timeout occurred, not semaphore timeout
-                    logger.error("Action execution timed out", extra={
+                    logger.error("Action execution timeout", extra={
                         "action_id": action.action_id,
                         "action_timeout": action.timeout
                     })
@@ -788,7 +784,7 @@ class RecoveryEngine:
                         action_type=action.action_type,
                         target=action.target,
                         execution_time=action.timeout,
-                        error_message=f"Action execution timeout ({action.timeout}s)",
+                        error_message=f"Action timeout ({action.timeout}s)",
                         retry_count=0,
                         final_state="timeout"
                     )
@@ -799,7 +795,7 @@ class RecoveryEngine:
                     "error_message": str(e)
                 })
                 
-                # FLAT LOCKING: Minimal lock scope for circuit breaker update only
+                # ATOMIC CIRCUIT BREAKER UPDATE: Minimal lock scope
                 self._circuit_breaker.record_failure()
                 self._total_actions += 1
                 self._failed_actions += 1
@@ -816,15 +812,15 @@ class RecoveryEngine:
                     final_state="failed"
                 )
             finally:
-                # GUARANTEED CLEANUP: Ensure internal state consistency even if timeout occurs
-                if not semaphore_acquired:
-                    # If semaphore wasn't acquired, ensure we don't leave inconsistent state
-                    logger.debug("Semaphore not acquired, ensuring state consistency", extra={
-                        "action_id": action.action_id
+                # GUARANTEED CLEANUP: Ensure semaphore is always released
+                if semaphore_acquired:
+                    logger.debug("Action completed, semaphore released", extra={
+                        "action_id": action.action_id,
+                        "success": result.success if 'result' in locals() else False
                     })
         
         # Execute all actions concurrently
-        tasks = [execute_with_semaphore(action) for action in actions]
+        tasks = [execute_with_timeout(action) for action in actions]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
         # Process results

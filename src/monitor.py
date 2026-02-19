@@ -84,12 +84,19 @@ class SystemMonitor:
         self._monitor_task: Optional[asyncio.Task] = None
         self._health_check_counter = 0
         
+        # API CIRCUIT BREAKER: Track API failure counts per endpoint
+        self._api_failure_counts: Dict[str, int] = {}
+        self._api_circuit_open: Dict[str, bool] = {}
+        self._api_circuit_open_time: Dict[str, datetime] = {}
+        self._api_circuit_recovery_timeout = 60.0  # 60 seconds
+        
         logger.info("SystemMonitor initialized", extra={
             "collection_interval": self.config.collection_interval,
             "api_endpoints_count": len(self.config.api_endpoints),
             "network_monitoring": self.config.enable_network_monitoring,
             "disk_monitoring": self.config.enable_disk_monitoring,
-            "buffer_max_size": 1000
+            "buffer_max_size": 1000,
+            "api_circuit_breaker_enabled": len(self.config.api_endpoints) > 0
         })
     
     async def start_monitoring(self) -> None:
@@ -226,36 +233,37 @@ class SystemMonitor:
                 network_sent = network.bytes_sent
                 network_recv = network.bytes_recv
                 
-                # ATOMIC INTEGRITY: Use asyncio.Lock for network counter protection
+                # THREAD-SAFE COUNTERS: Complete atomic transaction within lock
                 async with self._network_lock:
                     try:
-                        # ATOMIC OPERATION: Calculate differential and update state in single lock
+                        # ATOMIC OPERATION: Read old counters and calculate differential in single transaction
                         if self._network_counters:
-                            network_sent_diff = network_sent - self._network_counters['sent']
-                            network_recv_diff = network_recv - self._network_counters['recv']
+                            old_sent = self._network_counters['sent']
+                            old_recv = self._network_counters['recv']
+                            network_sent_diff = network_sent - old_sent
+                            network_recv_diff = network_recv - old_recv
                         else:
                             network_sent_diff = 0
                             network_recv_diff = 0
                         
-                        # ATOMIC UPDATE: Update counters atomically to prevent race conditions
-                        # Use dict.copy() to avoid lateral mutation
-                        new_counters = {
+                        # ATOMIC UPDATE: Write new counters in same transaction
+                        self._network_counters = {
                             'sent': network_sent,
                             'recv': network_recv
                         }
-                        self._network_counters = new_counters.copy()
                         
                     except Exception as e:
-                        # ATOMIC INTEGRITY: If network counters fail, discard this metric point
-                        logger.error("Network counter update failed - discarding metric point", exc_info=True, extra={
+                        # CRITICAL FAILURE: Network counter corruption detected
+                        logger.critical("Network counter atomic transaction failed - SYSTEM INTEGRITY AT RISK", exc_info=True, extra={
                             "error_type": type(e).__name__,
                             "error_message": str(e),
                             "network_sent": network_sent,
                             "network_recv": network_recv,
                             "previous_counters": self._network_counters
                         })
-                        # Raise custom exception to discard this metric point
-                        raise MetricCollectionError(f"Network counter update failed: {str(e)}")
+                        # Continue with zero differential to prevent data corruption
+                        network_sent_diff = 0
+                        network_recv_diff = 0
             
             metrics = SystemMetrics(
                 timestamp=datetime.now(),
@@ -290,6 +298,25 @@ class SystemMonitor:
         metrics = []
         
         for endpoint in self.config.api_endpoints:
+            # API CIRCUIT BREAKER: Check if circuit is open for this endpoint
+            if self._api_circuit_open.get(endpoint, False):
+                # Check if recovery timeout has passed
+                open_time = self._api_circuit_open_time.get(endpoint)
+                if open_time and (datetime.now() - open_time).total_seconds() < self._api_circuit_recovery_timeout:
+                    logger.warning("API circuit breaker open - skipping endpoint", extra={
+                        "endpoint": endpoint,
+                        "circuit_open_time": open_time.isoformat(),
+                        "recovery_timeout": self._api_circuit_recovery_timeout
+                    })
+                    continue
+                else:
+                    # Recovery timeout passed, reset circuit
+                    self._api_circuit_open[endpoint] = False
+                    self._api_failure_counts[endpoint] = 0
+                    logger.info("API circuit breaker reset - resuming monitoring", extra={
+                        "endpoint": endpoint
+                    })
+            
             try:
                 start_time = time.time()
                 
@@ -308,6 +335,9 @@ class SystemMonitor:
                         
                         if not api_metric.success:
                             api_metric.error_message = f"HTTP {response.status}"
+                
+                # API CIRCUIT BREAKER: Reset failure count on success
+                self._api_failure_counts[endpoint] = 0
                 
                 metrics.append(api_metric)
                 
@@ -329,10 +359,24 @@ class SystemMonitor:
                 )
                 metrics.append(api_metric)
                 
+                # API CIRCUIT BREAKER: Increment failure count
+                self._api_failure_counts[endpoint] = self._api_failure_counts.get(endpoint, 0) + 1
+                
                 logger.warning("API endpoint timeout", extra={
                     "endpoint": endpoint,
-                    "timeout_ms": 10000
+                    "timeout_ms": 10000,
+                    "failure_count": self._api_failure_counts[endpoint]
                 })
+                
+                # API CIRCUIT BREAKER: Open circuit if 3 consecutive failures
+                if self._api_failure_counts[endpoint] >= 3:
+                    self._api_circuit_open[endpoint] = True
+                    self._api_circuit_open_time[endpoint] = datetime.now()
+                    logger.critical("API circuit breaker opened - RESOURCE EXHAUSTION PROTECTION ACTIVATED", extra={
+                        "endpoint": endpoint,
+                        "failure_count": self._api_failure_counts[endpoint],
+                        "recovery_timeout": self._api_circuit_recovery_timeout
+                    })
                 
             except Exception as e:
                 api_metric = APIMetrics(
@@ -345,11 +389,25 @@ class SystemMonitor:
                 )
                 metrics.append(api_metric)
                 
+                # API CIRCUIT BREAKER: Increment failure count
+                self._api_failure_counts[endpoint] = self._api_failure_counts.get(endpoint, 0) + 1
+                
                 logger.error("Failed to collect API metrics", exc_info=True, extra={
                     "endpoint": endpoint,
                     "error_type": type(e).__name__,
-                    "error_message": str(e)
+                    "error_message": str(e),
+                    "failure_count": self._api_failure_counts[endpoint]
                 })
+                
+                # API CIRCUIT BREAKER: Open circuit if 3 consecutive failures
+                if self._api_failure_counts[endpoint] >= 3:
+                    self._api_circuit_open[endpoint] = True
+                    self._api_circuit_open_time[endpoint] = datetime.now()
+                    logger.critical("API circuit breaker opened - RESOURCE EXHAUSTION PROTECTION ACTIVATED", extra={
+                        "endpoint": endpoint,
+                        "failure_count": self._api_failure_counts[endpoint],
+                        "recovery_timeout": self._api_circuit_recovery_timeout
+                    })
         
         return metrics
     
@@ -371,8 +429,17 @@ class SystemMonitor:
                 "error_message": str(e)
             })
         finally:
-            # MEMORY HARDENING: Ensure buffer health even if cleanup fails
-            if len(self._metrics_buffer) > 4500:  # 90% of maxlen=5000
+            # HARD BUFFER LIMITS: Force cleanup to maintain 20% safety margin
+            if len(self._metrics_buffer) > 5000:  # Exceeds hard limit
+                logger.critical("System metrics buffer exceeded hard limit - forcing cleanup", extra={
+                    "buffer_size": len(self._metrics_buffer),
+                    "hard_limit": 5000,
+                    "safety_margin": "20%"
+                })
+                # Force reduce to 4000 (20% safety margin below 5000)
+                while len(self._metrics_buffer) > 4000:
+                    self._metrics_buffer.popleft()
+            elif len(self._metrics_buffer) > 4500:  # 90% of maxlen=5000
                 logger.warning("System metrics buffer approaching capacity limit", extra={
                     "buffer_size": len(self._metrics_buffer),
                     "maxlen": 5000
@@ -391,8 +458,17 @@ class SystemMonitor:
                 "error_message": str(e)
             })
         finally:
-            # MEMORY HARDENING: Ensure buffer health even if cleanup fails
-            if len(self._api_metrics_buffer) > 4500:  # 90% of maxlen=5000
+            # HARD BUFFER LIMITS: Force cleanup to maintain 20% safety margin
+            if len(self._api_metrics_buffer) > 5000:  # Exceeds hard limit
+                logger.critical("API metrics buffer exceeded hard limit - forcing cleanup", extra={
+                    "buffer_size": len(self._api_metrics_buffer),
+                    "hard_limit": 5000,
+                    "safety_margin": "20%"
+                })
+                # Force reduce to 4000 (20% safety margin below 5000)
+                while len(self._api_metrics_buffer) > 4000:
+                    self._api_metrics_buffer.popleft()
+            elif len(self._api_metrics_buffer) > 4500:  # 90% of maxlen=5000
                 logger.warning("API metrics buffer approaching capacity limit", extra={
                     "buffer_size": len(self._api_metrics_buffer),
                     "maxlen": 5000
