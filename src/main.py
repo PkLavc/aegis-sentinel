@@ -46,6 +46,7 @@ class AegisSentinel:
         self._monitor_task: Optional[asyncio.Task] = None
         self._detection_task: Optional[asyncio.Task] = None
         self._recovery_task: Optional[asyncio.Task] = None
+        self._heartbeat_task: Optional[asyncio.Task] = None  # HEALTH CHECK COORDINATION
         
         # Metrics storage
         self._system_metrics: List[SystemMetrics] = []
@@ -62,7 +63,12 @@ class AegisSentinel:
             'ml_fallback_count': 0,
             'ml_success_count': 0,
             'ml_error_count': 0,
-            'system_blindness_events': 0
+            'system_blindness_events': 0,
+            # HEALTH CHECK COORDINATION: Track service health
+            'last_heartbeat_time': None,
+            'heartbeat_failures': 0,
+            'monitoring_health': True,
+            'detection_health': True
         }
         
         logger.info("Aegis Sentinel initialized", extra={
@@ -89,6 +95,9 @@ class AegisSentinel:
         
         # Start detection and recovery loop
         self._detection_task = asyncio.create_task(self._detection_loop())
+        
+        # Start health check coordination
+        self._heartbeat_task = asyncio.create_task(self._heartbeat_monitor())
         
         logger.info("Aegis Sentinel service started successfully")
     
@@ -180,6 +189,58 @@ class AegisSentinel:
                 logger.error("Error in detection loop", exc_info=True, extra={
                     "error_type": type(e).__name__,
                     "error_message": str(e)
+                })
+                await asyncio.sleep(self.monitoring_config.collection_interval)
+    
+    async def _heartbeat_monitor(self) -> None:
+        """HEALTH CHECK COORDINATION: Central heartbeat to verify service responsiveness."""
+        while self._running:
+            try:
+                current_time = datetime.now()
+                self._stats['last_heartbeat_time'] = current_time
+                
+                # Check if monitoring is responding
+                latest_metrics = self.monitor.get_latest_metrics(limit=1)
+                if not latest_metrics:
+                    self._stats['monitoring_health'] = False
+                    self._stats['heartbeat_failures'] += 1
+                    logger.critical("Monitoring service unresponsive - SYSTEM BLINDNESS DETECTED", extra={
+                        "heartbeat_failures": self._stats['heartbeat_failures'],
+                        "last_heartbeat": current_time.isoformat(),
+                        "monitoring_interval": self.monitoring_config.collection_interval
+                    })
+                else:
+                    self._stats['monitoring_health'] = True
+                    self._stats['heartbeat_failures'] = 0  # Reset on success
+                
+                # Check if detection is responding
+                if self._stats['last_detection_time']:
+                    time_since_detection = (current_time - self._stats['last_detection_time']).total_seconds()
+                    if time_since_detection > (self.monitoring_config.collection_interval * 2):
+                        self._stats['detection_health'] = False
+                        logger.warning("Detection service delayed - potential processing bottleneck", extra={
+                            "time_since_last_detection": time_since_detection,
+                            "expected_interval": self.monitoring_config.collection_interval * 2
+                        })
+                    else:
+                        self._stats['detection_health'] = True
+                
+                # Log heartbeat status
+                logger.debug("Heartbeat check completed", extra={
+                    "monitoring_health": self._stats['monitoring_health'],
+                    "detection_health": self._stats['detection_health'],
+                    "heartbeat_failures": self._stats['heartbeat_failures'],
+                    "uptime_seconds": (current_time - self._stats['start_time']).total_seconds() if self._stats['start_time'] else 0
+                })
+                
+                await asyncio.sleep(self.monitoring_config.collection_interval)
+                
+            except Exception as e:
+                self._stats['heartbeat_failures'] += 1
+                logger.error("Heartbeat monitor failed", exc_info=True, extra={
+                    "error_type": type(e).__name__,
+                    "error_message": str(e),
+                    "heartbeat_failures": self._stats['heartbeat_failures']
                 })
                 await asyncio.sleep(self.monitoring_config.collection_interval)
     

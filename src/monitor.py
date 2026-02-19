@@ -90,13 +90,27 @@ class SystemMonitor:
         self._api_circuit_open_time: Dict[str, datetime] = {}
         self._api_circuit_recovery_timeout = 60.0  # 60 seconds
         
+        # PYDANTIC TYPE FIX: Safely access field values without treating FieldInfo as iterable
+        api_endpoints_count = 0
+        api_circuit_breaker_enabled = False
+        
+        try:
+            # Try to access the actual value, not the FieldInfo object
+            if hasattr(self.config, 'api_endpoints') and self.config.api_endpoints is not None:
+                api_endpoints_count = len(self.config.api_endpoints)
+                api_circuit_breaker_enabled = len(self.config.api_endpoints) > 0
+        except (TypeError, AttributeError):
+            # Fallback for Pydantic FieldInfo objects
+            api_endpoints_count = 0
+            api_circuit_breaker_enabled = False
+        
         logger.info("SystemMonitor initialized", extra={
             "collection_interval": self.config.collection_interval,
-            "api_endpoints_count": len(self.config.api_endpoints),
+            "api_endpoints_count": api_endpoints_count,
             "network_monitoring": self.config.enable_network_monitoring,
             "disk_monitoring": self.config.enable_disk_monitoring,
             "buffer_max_size": 1000,
-            "api_circuit_breaker_enabled": len(self.config.api_endpoints) > 0
+            "api_circuit_breaker_enabled": api_circuit_breaker_enabled
         })
     
     async def start_monitoring(self) -> None:

@@ -189,7 +189,7 @@ async def main():
         print("✅ Graceful fallback operational")
         
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        print(f"\nTest failed: {e}")
         import traceback
         traceback.print_exc()
         return False

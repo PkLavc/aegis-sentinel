@@ -127,7 +127,7 @@ async def main():
             print("The system is now ready for production deployment.")
         return success
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        print(f"\nTest failed: {e}")
         import traceback
         traceback.print_exc()
         return False

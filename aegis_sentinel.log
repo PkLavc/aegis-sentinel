@@ -3070,3 +3070,160 @@ docker.errors.DockerException: Error while fetching server API version: (2, 'Cre
 2026-02-18 22:53:44,882 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
 2026-02-18 22:53:44,882 - src.detector - WARNING - Insufficient data for statistical analysis
 2026-02-18 22:53:44,882 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:53:55,895 - src.monitor - INFO - Internal health check
+2026-02-18 22:53:55,895 - src.detector - INFO - ML warm-up phase completed
+2026-02-18 22:53:55,913 - src.detector - INFO - Statistical analysis completed
+2026-02-18 22:53:55,913 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:53:55,913 - main - WARNING - Anomaly detected
+2026-02-18 22:53:55,914 - src.healer - WARNING - No recovery actions available for anomaly
+2026-02-18 22:53:55,914 - main - WARNING - No recovery actions were successful
+2026-02-18 22:53:55,914 - main - WARNING - Anomaly detected
+2026-02-18 22:53:55,914 - src.healer - WARNING - No recovery actions available for anomaly
+2026-02-18 22:53:55,914 - main - WARNING - No recovery actions were successful
+2026-02-18 22:54:25,454 - src.monitor - INFO - SystemMonitor initialized
+2026-02-18 22:54:25,454 - src.detector - INFO - IsolationForestDetector initialized
+2026-02-18 22:54:25,454 - src.detector - INFO - StatisticalDetector initialized
+2026-02-18 22:54:25,454 - src.detector - INFO - AnomalyDetectorService initialized
+2026-02-18 22:54:29,550 - src.healer - WARNING - Docker TCP connection failed, entering monitor-only mode
+2026-02-18 22:54:29,550 - src.healer - INFO - Cache recovery handler initialized
+2026-02-18 22:54:29,550 - src.healer - INFO - Service recovery handler initialized
+2026-02-18 22:54:29,550 - src.healer - INFO - Recovery engine initialized
+2026-02-18 22:54:29,550 - main - INFO - Aegis Sentinel initialized
+2026-02-18 22:54:29,550 - main - INFO - Starting Aegis Sentinel service
+2026-02-18 22:54:29,550 - src.monitor - INFO - System monitoring started
+2026-02-18 22:54:29,550 - main - INFO - Aegis Sentinel service started successfully
+2026-02-18 22:54:29,550 - main - INFO - Aegis Sentinel is running. Press Ctrl+C to stop.
+2026-02-18 22:54:30,560 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 22:54:30,560 - src.detector - INFO - Creating synthetic training data for Isolation Forest model
+2026-02-18 22:54:30,658 - src.detector - INFO - Isolation Forest model trained with synthetic data
+2026-02-18 22:54:30,658 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:54:30,658 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:54:30,658 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:54:41,574 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:54:41,574 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:54:41,574 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:54:52,589 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:54:52,589 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:54:52,589 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:55:03,601 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:55:03,601 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:55:03,601 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:55:14,616 - src.monitor - INFO - Internal health check
+2026-02-18 22:55:14,616 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:55:14,616 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:55:14,616 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:55:25,705 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:55:25,705 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:55:25,705 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:55:36,719 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:55:36,719 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:55:36,719 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:55:47,732 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:55:47,732 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:55:47,732 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:55:58,748 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:55:58,749 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:55:58,749 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:56:09,765 - src.monitor - INFO - Internal health check
+2026-02-18 22:56:09,765 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:56:09,765 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:56:09,765 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:56:20,779 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:56:20,779 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:56:20,779 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:56:31,801 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:56:31,801 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:56:31,801 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:56:42,822 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:56:42,823 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:56:42,823 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:56:53,840 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:56:53,840 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:56:53,841 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:57:04,862 - src.monitor - INFO - Internal health check
+2026-02-18 22:57:04,863 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:57:04,863 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:57:04,863 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:57:15,883 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:57:15,883 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:57:15,883 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:57:26,892 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:57:26,892 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:57:26,892 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:57:37,905 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:57:37,905 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:57:37,905 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:57:48,915 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:57:48,915 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:57:48,916 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:57:59,935 - src.monitor - INFO - Internal health check
+2026-02-18 22:57:59,935 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:57:59,935 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:57:59,935 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:58:10,946 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:58:10,946 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:58:10,946 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:58:21,960 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:58:21,960 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:58:21,961 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:58:32,975 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:58:32,975 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:58:32,975 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:58:43,991 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:58:43,991 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:58:43,992 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:58:55,012 - src.monitor - INFO - Internal health check
+2026-02-18 22:58:55,013 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:58:55,013 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:58:55,013 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:59:06,026 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:59:06,026 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:59:06,026 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:59:17,039 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:59:17,039 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:59:17,039 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:59:28,055 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:59:28,055 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:59:28,055 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:59:39,066 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:59:39,066 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:59:39,066 - src.detector - INFO - Anomaly detection completed
+2026-02-18 22:59:50,189 - src.monitor - INFO - Internal health check
+2026-02-18 22:59:50,190 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 22:59:50,190 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 22:59:50,190 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:00:01,242 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:00:01,242 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:00:01,243 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:00:12,337 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:00:12,337 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:00:12,337 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:00:23,345 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:00:23,345 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:00:23,346 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:00:34,369 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:00:34,369 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:00:34,369 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:00:45,399 - src.monitor - INFO - Internal health check
+2026-02-18 23:00:45,399 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:00:45,400 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:00:45,400 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:00:56,410 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:00:56,410 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:00:56,410 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:01:07,424 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:01:07,424 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:01:07,424 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:01:18,439 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:01:18,439 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:01:18,439 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:01:29,458 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:01:29,458 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:01:29,458 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:01:40,471 - src.monitor - INFO - Internal health check
+2026-02-18 23:01:40,472 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:01:40,472 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:01:40,472 - src.detector - INFO - Anomaly detection completed
+2026-02-18 23:01:51,493 - src.detector - INFO - ML model in warm-up phase - using statistical fallback
+2026-02-18 23:01:51,493 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 23:01:51,493 - src.detector - INFO - Anomaly detection completed
