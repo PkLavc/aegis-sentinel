@@ -31,7 +31,7 @@ class RecoveryAction(BaseModel):
     action_type: str = Field(description="Type of recovery action to perform")
     target: str = Field(description="Target of the recovery action")
     parameters: Dict[str, Union[str, int, float, bool]] = Field(default_factory=dict, description="Parameters for the action")
-    priority: int = Field(ge=1, le=10, description="Priority of the action (1-10, higher is more critical)")
+    priority: int = Field(default=5, ge=1, le=10, description="Priority of the action (1-10, higher is more critical)")
     max_retries: int = Field(default=3, ge=0, le=10, description="Maximum number of retry attempts")
     retry_delay: float = Field(default=5.0, gt=0.0, description="Delay between retry attempts in seconds")
     timeout: float = Field(default=60.0, gt=0.0, description="Timeout for the action in seconds")

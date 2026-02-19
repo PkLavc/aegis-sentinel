@@ -1684,3 +1684,248 @@ docker.errors.DockerException: Error while fetching server API version: (2, 'Cre
 2026-02-18 21:33:08,306 - src.detector - WARNING - Insufficient data for training Isolation Forest model
 2026-02-18 21:33:08,307 - src.detector - WARNING - Insufficient data for statistical analysis
 2026-02-18 21:33:08,307 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:33:19,325 - src.monitor - INFO - Internal health check
+2026-02-18 21:33:19,325 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:33:19,325 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:33:19,325 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:34:02,844 - src.monitor - INFO - SystemMonitor initialized
+2026-02-18 21:34:02,844 - src.detector - INFO - IsolationForestDetector initialized
+2026-02-18 21:34:02,844 - src.detector - INFO - StatisticalDetector initialized
+2026-02-18 21:34:02,844 - src.detector - INFO - AnomalyDetectorService initialized
+2026-02-18 21:34:02,846 - src.healer - WARNING - Docker client initialization failed - entering monitor-only mode
+Traceback (most recent call last):
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 223, in _retrieve_server_version
+    return self.version(api_version=False)["ApiVersion"]
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\daemon.py", line 181, in version
+    return self._result(self._get(url), json=True)
+                        ~~~~~~~~~^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\utils\decorators.py", line 44, in inner
+    return f(self, *args, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 246, in _get
+    return self.get(url, **self._set_request_timeout(kwargs))
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 602, in get
+    return self.request("GET", url, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\requests\adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+    ~~~~~~~~~~~~^
+        method,
+        ^^^^^^^
+    ...<6 lines>...
+        enforce_content_length=enforce_content_length,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\urllib3\connection.py", line 494, in request
+    self.endheaders()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Python314\Lib\http\client.py", line 1333, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\http\client.py", line 1093, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "C:\Python314\Lib\http\client.py", line 1037, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipeconn.py", line 25, in connect
+    sock.connect(self.npipe_path)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 25, in wrapped
+    return f(self, *args, **kwargs)
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 76, in connect
+    raise e
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\transport\npipesocket.py", line 54, in connect
+    handle = win32file.CreateFile(
+        address,
+    ...<7 lines>...
+        0
+    )
+pywintypes.error: (2, 'CreateFile', 'The system cannot find the file specified.')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "d:\Projects\aegis-sentinel\src\healer.py", line 101, in __init__
+    self._docker_client = docker.from_env()
+                          ~~~~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\client.py", line 94, in from_env
+    return cls(
+        timeout=timeout,
+    ...<3 lines>...
+        **kwargs_from_env(**kwargs)
+    )
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\client.py", line 45, in __init__
+    self.api = APIClient(*args, **kwargs)
+               ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 207, in __init__
+    self._version = self._retrieve_server_version()
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\patri\AppData\Roaming\Python\Python314\site-packages\docker\api\client.py", line 230, in _retrieve_server_version
+    raise DockerException(
+        f'Error while fetching server API version: {e}'
+    ) from e
+docker.errors.DockerException: Error while fetching server API version: (2, 'CreateFile', 'The system cannot find the file specified.')
+2026-02-18 21:34:02,852 - src.healer - INFO - Cache recovery handler initialized
+2026-02-18 21:34:02,852 - src.healer - INFO - Service recovery handler initialized
+2026-02-18 21:34:02,852 - src.healer - INFO - Recovery engine initialized
+2026-02-18 21:34:02,853 - main - INFO - Aegis Sentinel initialized
+2026-02-18 21:34:02,853 - main - INFO - Starting Aegis Sentinel service
+2026-02-18 21:34:02,853 - src.monitor - INFO - System monitoring started
+2026-02-18 21:34:02,853 - main - INFO - Aegis Sentinel service started successfully
+2026-02-18 21:34:02,853 - main - INFO - Aegis Sentinel is running. Press Ctrl+C to stop.
+2026-02-18 21:34:03,865 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:34:03,865 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:34:03,865 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:34:14,883 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:34:14,883 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:34:14,883 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:34:25,901 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:34:25,901 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:34:25,901 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:34:36,911 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:34:36,911 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:34:36,911 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:34:47,978 - src.monitor - INFO - Internal health check
+2026-02-18 21:34:47,978 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:34:47,978 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:34:47,978 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:34:58,991 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:34:58,991 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:34:58,991 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:35:10,005 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:35:10,005 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:35:10,005 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:35:21,024 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:35:21,025 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:35:21,025 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:35:32,040 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:35:32,041 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:35:32,041 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:35:43,054 - src.monitor - INFO - Internal health check
+2026-02-18 21:35:43,054 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:35:43,054 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:35:43,054 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:35:54,063 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:35:54,063 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:35:54,063 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:36:05,161 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:36:05,161 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:36:05,161 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:36:16,171 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:36:16,171 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:36:16,171 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:36:27,182 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:36:27,182 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:36:27,182 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:36:38,199 - src.monitor - INFO - Internal health check
+2026-02-18 21:36:38,199 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:36:38,199 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:36:38,199 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:36:49,219 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:36:49,220 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:36:49,220 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:37:00,308 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:37:00,308 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:37:00,309 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:37:11,328 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:37:11,329 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:37:11,329 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:37:22,343 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:37:22,343 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:37:22,343 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:37:33,355 - src.monitor - INFO - Internal health check
+2026-02-18 21:37:33,356 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:37:33,356 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:37:33,356 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:37:44,375 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:37:44,376 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:37:44,376 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:37:55,395 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:37:55,396 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:37:55,396 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:38:06,420 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:38:06,421 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:38:06,421 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:38:17,524 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:38:17,524 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:38:17,524 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:38:28,544 - src.monitor - INFO - Internal health check
+2026-02-18 21:38:28,545 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:38:28,545 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:38:28,545 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:38:39,562 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:38:39,562 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:38:39,562 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:38:50,580 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:38:50,580 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:38:50,580 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:39:01,599 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:39:01,599 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:39:01,599 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:39:12,616 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:39:12,617 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:39:12,617 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:39:23,629 - src.monitor - INFO - Internal health check
+2026-02-18 21:39:23,629 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:39:23,629 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:39:23,629 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:39:34,643 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:39:34,644 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:39:34,644 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:39:45,658 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:39:45,658 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:39:45,658 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:39:56,671 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:39:56,671 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:39:56,671 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:40:07,683 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:40:07,683 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:40:07,683 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:40:18,701 - src.monitor - INFO - Internal health check
+2026-02-18 21:40:18,702 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:40:18,703 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:40:18,703 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:40:29,719 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:40:29,719 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:40:29,719 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:40:40,732 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:40:40,732 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:40:40,732 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:40:51,751 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:40:51,751 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:40:51,751 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:41:02,773 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:41:02,773 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:41:02,773 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:41:13,799 - src.monitor - INFO - Internal health check
+2026-02-18 21:41:13,799 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:41:13,800 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:41:13,800 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:41:24,812 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:41:24,812 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:41:24,812 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:41:35,822 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:41:35,822 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:41:35,822 - src.detector - INFO - Anomaly detection completed
+2026-02-18 21:41:46,837 - src.detector - WARNING - Insufficient data for training Isolation Forest model
+2026-02-18 21:41:46,837 - src.detector - WARNING - Insufficient data for statistical analysis
+2026-02-18 21:41:46,837 - src.detector - INFO - Anomaly detection completed

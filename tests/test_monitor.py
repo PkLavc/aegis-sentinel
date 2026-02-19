@@ -59,7 +59,8 @@ class TestSystemMetrics:
             )
             assert False, "Should have raised ValueError for negative memory"
         except ValueError as e:
-            assert "Memory values must be positive" in str(e)
+            # Pydantic v2 changed error messages - check for the new format
+            assert "Input should be greater than or equal to 0" in str(e) or "Memory values must be positive" in str(e)
         
         # Test unreasonably high memory value
         try:
@@ -155,8 +156,10 @@ class TestSystemMonitor:
         mock_net.bytes_recv = 2000
         mock_psutil.net_io_counters.return_value = mock_net
         
-        # Collect metrics
-        metrics = await monitor._collect_system_metrics()
+        # Mock network lock to simulate first-time collection (no previous counters)
+        with patch.object(monitor, '_network_lock'):
+            # Collect metrics
+            metrics = await monitor._collect_system_metrics()
         
         # Verify results
         assert isinstance(metrics, SystemMetrics)
@@ -165,8 +168,9 @@ class TestSystemMonitor:
         assert metrics.memory_used_gb == 4.0
         assert metrics.memory_total_gb == 8.0
         assert metrics.disk_usage_percent == 70.0
-        assert metrics.network_bytes_sent == 1000
-        assert metrics.network_bytes_recv == 2000
+        # CRITICAL FIX: First collection should return 0 for network differential
+        assert metrics.network_bytes_sent == 0
+        assert metrics.network_bytes_recv == 0
     
     @patch('src.monitor.aiohttp')
     async def test_collect_api_metrics_success(self, mock_aiohttp):

@@ -152,17 +152,40 @@ class SystemMonitor:
             # Check buffer sizes
             metrics_buffer_size = len(self._metrics_buffer)
             api_buffer_size = len(self._api_metrics_buffer)
+            max_capacity = 1000
             
             # Check network lock status (if available)
             network_lock_status = "locked" if self._network_lock.locked() else "unlocked"
             
-            logger.info("Internal health check", extra={
+            # MEMORY HEALTH CHECK: Alert if buffers exceed 90% capacity
+            metrics_usage_percent = (metrics_buffer_size / max_capacity) * 100
+            api_usage_percent = (api_buffer_size / max_capacity) * 100
+            
+            health_check_data = {
                 "metrics_buffer_size": metrics_buffer_size,
                 "api_buffer_size": api_buffer_size,
                 "network_lock_status": network_lock_status,
-                "max_buffer_capacity": 1000,
-                "health_check_cycle": self._health_check_counter
-            })
+                "max_buffer_capacity": max_capacity,
+                "health_check_cycle": self._health_check_counter,
+                "metrics_usage_percent": round(metrics_usage_percent, 1),
+                "api_usage_percent": round(api_usage_percent, 1)
+            }
+            
+            # CRITICAL MEMORY ALERT: Buffer usage exceeds 90%
+            if metrics_usage_percent > 90 or api_usage_percent > 90:
+                logger.critical("Buffer memory usage critical - approaching capacity limits", extra={
+                    **health_check_data,
+                    "memory_alert": "CRITICAL",
+                    "action_required": "Consider increasing buffer cleanup frequency or reducing collection interval"
+                })
+            elif metrics_usage_percent > 70 or api_usage_percent > 70:
+                logger.warning("Buffer memory usage high - approaching capacity limits", extra={
+                    **health_check_data,
+                    "memory_alert": "WARNING",
+                    "action_required": "Monitor buffer growth and cleanup effectiveness"
+                })
+            else:
+                logger.info("Internal health check", extra=health_check_data)
             
         except Exception as e:
             logger.error("Health check failed", exc_info=True, extra={
@@ -191,21 +214,41 @@ class SystemMonitor:
             # Network metrics
             network_sent = 0
             network_recv = 0
+            network_sent_diff = 0
+            network_recv_diff = 0
+            
             if self.config.enable_network_monitoring:
                 network = psutil.net_io_counters()
                 network_sent = network.bytes_sent
                 network_recv = network.bytes_recv
-            
-            # Calculate network differences with thread-safe protection
-            async with self._network_lock:
-                if self._network_counters:
-                    network_sent_diff = network_sent - self._network_counters.get('sent', 0)
-                    network_recv_diff = network_recv - self._network_counters.get('recv', 0)
-                else:
-                    network_sent_diff = 0
-                    network_recv_diff = 0
                 
-                self._network_counters = {'sent': network_sent, 'recv': network_recv}
+                # Calculate network differences with ATOMIC thread-safe protection
+                # CRITICAL FIX: Ensure network counter updates are atomic operations
+                async with self._network_lock:
+                    try:
+                        # ATOMIC OPERATION: Calculate differential and update state in single lock
+                        if self._network_counters:
+                            network_sent_diff = network_sent - self._network_counters.get('sent', 0)
+                            network_recv_diff = network_recv - self._network_counters.get('recv', 0)
+                        else:
+                            network_sent_diff = 0
+                            network_recv_diff = 0
+                        
+                        # ATOMIC UPDATE: Update counters as single operation
+                        self._network_counters = {'sent': network_sent, 'recv': network_recv}
+                        
+                    except Exception as e:
+                        # CRITICAL ERROR HANDLING: Log and continue with safe defaults
+                        logger.error("Network counter update failed - using safe defaults", exc_info=True, extra={
+                            "error_type": type(e).__name__,
+                            "error_message": str(e),
+                            "network_sent": network_sent,
+                            "network_recv": network_recv,
+                            "previous_counters": self._network_counters
+                        })
+                        # Continue with zero differential to prevent data corruption
+                        network_sent_diff = 0
+                        network_recv_diff = 0
             
             metrics = SystemMetrics(
                 timestamp=datetime.now(),
