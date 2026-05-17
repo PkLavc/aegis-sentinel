@@ -3,12 +3,12 @@
   "project": "aegis-sentinel",
   "status": "ok",
   "source": "github-actions",
-  "lastUpdated": "2026-05-16T18:23:32Z",
-  "runId": "25969448764",
+  "lastUpdated": "2026-05-17T00:52:09Z",
+  "runId": "25977333788",
   "historyCount": 28,
   "metrics": {
-    "latencyMs": 154,
-    "successRate": 98.0,
-    "eventsProcessed": 2044
+    "latencyMs": 147,
+    "successRate": 99.7,
+    "eventsProcessed": 1249
   }
 }
