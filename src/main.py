@@ -41,9 +41,6 @@ class AegisSentinel:
         self.detector = AnomalyDetectorService(self.detection_config)
         self.recovery = RecoveryEngine(self.recovery_config)
         
-        # FIX: Initialize Docker handlers asynchronously
-        asyncio.create_task(self._initialize_recovery_handlers())
-        
         # State management
         self._running = False
         self._monitor_task: Optional[asyncio.Task] = None
@@ -96,6 +93,9 @@ class AegisSentinel:
         # Start monitoring
         await self.monitor.start_monitoring()
         
+        # Initialize Docker recovery handlers asynchronously
+        asyncio.create_task(self._initialize_recovery_handlers())
+        
         # Start detection and recovery loop
         self._detection_task = asyncio.create_task(self._detection_loop())
         
@@ -122,6 +122,14 @@ class AegisSentinel:
             self._detection_task.cancel()
             try:
                 await self._detection_task
+            except asyncio.CancelledError:
+                pass
+        
+        # Cancel heartbeat task
+        if self._heartbeat_task:
+            self._heartbeat_task.cancel()
+            try:
+                await self._heartbeat_task
             except asyncio.CancelledError:
                 pass
         
