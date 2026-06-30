@@ -1,5 +1,11 @@
 # Aegis Sentinel
 
+## Portfolio Case Study
+
+Full case study: https://pklavc.com/projects/aegis-sentinel/
+
+This repository is part of my backend automation portfolio. It demonstrates Python anomaly detection, recovery workflow design, monitoring-oriented services, and reliability-focused automation.
+
 [![Python Version](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/PkLavc/aegis-sentinel?style=social)](https://github.com/PkLavc/aegis-sentinel)
